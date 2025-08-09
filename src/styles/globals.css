@@ -1,0 +1,147 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+hr {
+    font-weight: 100;
+}
+
+.link {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.main {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    font-family: var(--font-poppins), sans-serif;
+    font-weight: 700;
+    
+}
+
+
+.menuLateral {
+    width: 17rem;
+    border: 1px solid #ccc;
+} 
+
+.logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.5rem;
+    width: 100%;
+    font-size: 1.5rem;
+    border-bottom: 1px solid #ccc;
+}
+
+.menuIcon {
+    border-radius: 0.5rem;
+    padding: 0.3rem 0.5rem;
+    cursor: pointer;
+    font-size: 1.2rem;
+    margin-left: 0.5rem;
+}
+
+.menuIcon:hover {
+    cursor: pointer;
+    background-color: rgb(229, 232, 243);
+}
+
+.menuIcon-strong {
+    text-shadow: 0 0 0.5px currentColor;
+}
+
+.opcoesMenuLateral {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1rem;
+
+}
+
+.opcoesMenuLateral li {
+    list-style: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+    margin: 0.3rem;
+    color: rgb(71, 85, 105);
+
+}
+
+li.active {
+    background-color: #1f873c;
+    color: rgb(255, 255, 255);
+}
+
+li.noActive:hover {
+    background-color: #ccf0d58c;
+    cursor: pointer;
+}
+
+
+
+.container {
+    width: 100vw;
+    height: 100vh;
+    background-color: hsla(214, 32%, 91%, 1);
+}
+
+.header {
+    height: 5rem;
+    background-color: #fff;
+    padding: 0.5rem 1rem;    
+    display: flex;
+    gap: 1rem;
+}
+
+.header h1 {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.header p {
+    font-size: 0.8rem;
+    color: rgb(71, 85, 105);
+    font-weight: 500;
+}
+
+.header i {
+    border: 1px solid green;
+    color: #fff;
+    background-color: #1f873c;
+    font-size: 2rem;
+    width: 3rem;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+}
+
+.modalList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    justify-content: start;
+}
+
+.modalItem {
+    background-color: #d5e0d8;
+    list-style: none;
+    padding: 0.5rem 1rem;
+    border-radius: 1rem;
+}
+
+.liModalAtivo {
+    background-color: #1f873c;
+    color: #fff;
+}
