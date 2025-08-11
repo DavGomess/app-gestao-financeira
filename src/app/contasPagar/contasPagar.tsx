@@ -1,12 +1,28 @@
 import styles from "./contasPagar.module.css"
 
 export default function ContasPagar() {
-   
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const formData = new FormData(e.currentTarget);
+        const data = {
+            nome: formData.get("nome"),
+            valor: formData.get("valor"),
+            categoria: formData.get("categoria"),
+            data: formData.get("data")
+        };
+        await fetch("/api/contasPagar", {
+            method: "POST",
+            body: JSON.stringify(data),
+            headers: { "Content-Type": "application/json" },
+        });
+    }
+
+
     return (
         <div className={styles.main}>
             <div className={styles.formularioContasPagar}>
                 <h2>Criar conta</h2>
-                <form className={styles.formulario}>
+                <form className={styles.formulario} onSubmit={handleSubmit}>
                     <div className={styles.grupoInputs}>
                         <div className={styles.inputFormulario}>
                             <label htmlFor="nome">Nome</label>
