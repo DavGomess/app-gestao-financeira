@@ -21,4 +21,5 @@ model ContasPagar {
   valor Float
   categoria String
   data DateTime
+  status    String  @default("pendente")
 }
