@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import styles from "./contasPagar.module.css"
-import { CriarContaInput }  from "../../types/CriarContaInput";
+import { CriarContaInput, ContaLocal } from "../../types/CriarContaInput";
+
 
 
 export default function ContasPagar() {
-    const [contas, setContas] = useState<CriarContaInput[]>([])
+    const [contas, setContas] = useState<ContaLocal[]>([])
     const [selectedConta, setSelectedConta] = useState<CriarContaInput | null>(null)
 
     useEffect(() => {
@@ -30,10 +31,12 @@ export default function ContasPagar() {
 
         const formData = new FormData(form);
         const data = {
+            id: Date.now(),
             nome: formData.get("nome"),
             valor: formData.get("valor"),
             categoria: formData.get("categoria"),
-            data: formData.get("data")
+            data: formData.get("data"),
+            status: "pendente"
         };
         const res = await fetch("http://localhost:4000/contasPagar", {
             method: "POST",
@@ -43,30 +46,62 @@ export default function ContasPagar() {
 
         if (res.ok) {
             const novaConta = await res.json();
-            
+
             const contasAtualizadas = [...contas, novaConta];
             setContas(contasAtualizadas)
 
             localStorage.setItem("contas", JSON.stringify(contasAtualizadas));
 
             form.reset();
-        }        
+        }
+    };
+
+    const toggleStatus = (conta: ContaLocal) => {
+        let novoStatus = conta.status;
+        let statusAnterior = conta.statusAnterior;
+
+        if (conta.status === "pendente" || conta.status === "vencida") {
+            statusAnterior = conta.status;
+            novoStatus = "paga";
+        } else if (conta.status === "paga") {
+            novoStatus = statusAnterior || "pendente";
+        }
+
+        const contasAtualizadas = contas.map(c => c.id === conta.id ? { ...c, status: novoStatus, statusAnterior } : c);
+
+        setContas(contasAtualizadas);
+        localStorage.setItem("contas", JSON.stringify(contasAtualizadas))
+
+        fetch(`http://localhost:4000/contasPagar/${conta.id}`, {
+            method: "PUT",
+            body: JSON.stringify({ ...conta, status: novoStatus }),
+            headers: { "content-Type": "application/json" },
+        });
     };
 
     const renderLista = (status: string, titulo: string) => (
         <div className={styles.card}>
             <div className={styles.titulosStatus}>
-            <h4>{titulo}</h4>
+                <h4>{titulo}</h4>
             </div>
             <ul className={styles.listaContas}>
-                {contas.filter((conta) => conta.status === status).map((conta, index) => (
+                {contas.filter((conta) => conta.status === status).map((conta) => (
                     <li
-                        key={index}
+                        key={conta.id}
                         className={styles.itemLista}
                         onClick={() => setSelectedConta(conta)}
                     >
                         {conta.nome}
-                        <input type="checkbox" name="checkboxConta" id="checkboxConta" />
+                        <div className={styles.listaContasButtons}>
+                            <button className="btn"><i className="bi bi-pencil"></i></button>
+                            <button className="btn"><i className="bi bi-trash"></i></button>
+                            <input
+                                type="checkbox"
+                                checked={conta.status === "paga"}
+                                onClick={(e) => e.stopPropagation()}
+                                onChange={() => toggleStatus(conta)}
+                            />
+                        </div>
                     </li>
                 ))}
             </ul>
@@ -109,14 +144,60 @@ export default function ContasPagar() {
             {selectedConta && (
                 <div className={styles.modalOverlay} onClick={() => setSelectedConta(null)}>
                     <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-                        <h3>{selectedConta.nome}</h3>
-                        <p>Valor: R$ {selectedConta.valor}</p>
-                        <p>Categoria: {selectedConta.categoria}</p>
-                        <p>Data: {new Date(selectedConta.data).toLocaleDateString()}</p>
-                        <button onClick={() => setSelectedConta(null)}>Fechar</button>
+                        <div className={styles.modalHeader}>
+                            <h3>{selectedConta.nome}</h3>
+                            <span
+                                className={`${styles.statusBadge} ${styles[selectedConta.status]}`}
+                            >
+                                {selectedConta.status}
+                            </span>
+                        </div>
+                        <div className={styles.modalBody}>
+                            {["data", "categoria", "valor"].map((campo) => (
+                                <div
+                                    key={campo}
+                                    className={styles.infoCard}
+                                    style={{
+                                        borderLeftColor:
+                                            selectedConta.status === "vencida"
+                                                ? "#dc3545"
+                                                : selectedConta.status === "pendente"
+                                                    ? "#ffc107"
+                                                    : "#28a745",
+                                    }}
+                                >
+                                    {campo === "data" && (
+                                        <>
+                                            <i className="fa-solid fa-calendar-days"></i>
+                                            <p>{new Date(selectedConta.data).toLocaleDateString()}</p>
+                                        </>
+                                    )}
+                                    {campo === "categoria" && (
+                                        <>
+                                            <i className="fa-solid fa-tag"></i>
+                                            <p>{selectedConta.categoria}</p>
+                                        </>
+                                    )}
+                                    {campo === "valor" && (
+                                        <>
+                                            <i className="fa-solid fa-dollar-sign"></i>
+                                            <p>R$ {selectedConta.valor.toFixed(2)}</p>
+                                        </>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+
+                        <button
+                            className={styles.closeButton}
+                            onClick={() => setSelectedConta(null)}
+                        >
+                            Fechar
+                        </button>
                     </div>
                 </div>
             )}
+
         </div>
     )
 }
