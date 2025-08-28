@@ -79,6 +79,21 @@ export default function ContasPagar() {
         });
     };
 
+    const deletarLista = async (conta: ContaLocal) => {
+
+        const res = await fetch(`http://localhost:4000/contasPagar/${conta.id}`, {
+            method: "DELETE"
+        });
+
+        if(res.ok) {
+            const contasDeletas = contas.filter(c => c.id !== conta.id)
+            setContas(contasDeletas)
+            localStorage.setItem("contas", JSON.stringify(contasDeletas))
+        }
+
+
+    }
+
     const renderLista = (status: string, titulo: string) => (
         <div className={styles.card}>
             <div className={styles.titulosStatus}>
@@ -94,7 +109,12 @@ export default function ContasPagar() {
                         {conta.nome}
                         <div className={styles.listaContasButtons}>
                             <button className="btn"><i className="bi bi-pencil"></i></button>
-                            <button className="btn"><i className="bi bi-trash"></i></button>
+                            <button className="btn">
+                                <i className="bi bi-trash" onClick={(e) => {
+                                e.stopPropagation();
+                                deletarLista(conta)}}>
+                                </i>
+                            </button>
                             <input
                                 type="checkbox"
                                 checked={conta.status === "paga"}
@@ -188,12 +208,7 @@ export default function ContasPagar() {
                             ))}
                         </div>
 
-                        <button
-                            className={styles.closeButton}
-                            onClick={() => setSelectedConta(null)}
-                        >
-                            Fechar
-                        </button>
+                        <button className={styles.closeButton} onClick={() => setSelectedConta(null)}>Fechar</button>
                     </div>
                 </div>
             )}
