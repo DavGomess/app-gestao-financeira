@@ -186,6 +186,16 @@
     align-items: center;
 }
 
+.inputEditar {
+    border: none;
+    background: transparent;
+    outline: none;
+    width: 100%;
+    font-size: 1rem;
+    padding: 4px;
+}
+
+
 .statusBadge {
     padding: 0.3rem 0.8rem;
     border-radius: 0.5rem;

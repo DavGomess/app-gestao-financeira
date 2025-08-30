@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import styles from "./contasPagar.module.css"
-import { CriarContaInput, ContaLocal } from "../../types/CriarContaInput";
+import { ContaLocal } from "../../types/CriarContaInput";
 
 
 
 export default function ContasPagar() {
     const [contas, setContas] = useState<ContaLocal[]>([])
-    const [selectedConta, setSelectedConta] = useState<CriarContaInput | null>(null)
+    const [selectedConta, setSelectedConta] = useState<ContaLocal | null>(null)
+    const [isEditing, setIsEditing] = useState(false);
+
+
 
     useEffect(() => {
         const contasLocal = localStorage.getItem("contas");
@@ -79,19 +82,17 @@ export default function ContasPagar() {
         });
     };
 
-    const deletarLista = async (conta: ContaLocal) => {
+    const deletarConta = async (conta: ContaLocal) => {
 
         const res = await fetch(`http://localhost:4000/contasPagar/${conta.id}`, {
             method: "DELETE"
         });
 
-        if(res.ok) {
+        if (res.ok) {
             const contasDeletas = contas.filter(c => c.id !== conta.id)
             setContas(contasDeletas)
             localStorage.setItem("contas", JSON.stringify(contasDeletas))
         }
-
-
     }
 
     const renderLista = (status: string, titulo: string) => (
@@ -104,16 +105,33 @@ export default function ContasPagar() {
                     <li
                         key={conta.id}
                         className={styles.itemLista}
-                        onClick={() => setSelectedConta(conta)}
+                        onClick={() => {
+                            setSelectedConta(conta)
+                            setIsEditing(false);
+                        }}
                     >
-                        {conta.nome}
+
+                        <span>{conta.nome}</span>
+
                         <div className={styles.listaContasButtons}>
-                            <button className="btn"><i className="bi bi-pencil"></i></button>
                             <button className="btn">
-                                <i className="bi bi-trash" onClick={(e) => {
-                                e.stopPropagation();
-                                deletarLista(conta)}}>
-                                </i>
+                                <i
+                                    className="bi bi-pencil"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedConta(conta);
+                                        setIsEditing(true);
+                                    }}
+                                ></i>
+                            </button>
+                            <button className="btn">
+                                <i
+                                    className="bi bi-trash"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        deletarConta(conta);
+                                    }}
+                                ></i>
                             </button>
                             <input
                                 type="checkbox"
@@ -125,7 +143,7 @@ export default function ContasPagar() {
                     </li>
                 ))}
             </ul>
-        </div>
+        </div >
     )
 
 
@@ -152,7 +170,7 @@ export default function ContasPagar() {
                             <input type="date" id="data" name="data" required />
                         </div>
                     </div>
-                    <button type="submit" className={styles.buttonAdd}>+ Adicionar</button>
+                    <button type="submit" className={styles.buttonAdd} >+ Adicionar</button>
                 </form>
             </div>
             <div className={styles.renderizacaoContasPagar}>
@@ -165,7 +183,19 @@ export default function ContasPagar() {
                 <div className={styles.modalOverlay} onClick={() => setSelectedConta(null)}>
                     <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
-                            <h3>{selectedConta.nome}</h3>
+                            {isEditing ? (
+                                <input
+                                    type="text"
+                                    value={selectedConta.nome}
+                                    className={styles.inputEditar}
+                                    onChange={(e) =>
+                                        setSelectedConta({ ...selectedConta, nome: e.target.value })
+                                    }
+                                />
+                            ) : (
+                                <h3>{selectedConta.nome}</h3>
+                            )}
+
                             <span
                                 className={`${styles.statusBadge} ${styles[selectedConta.status]}`}
                             >
@@ -186,33 +216,100 @@ export default function ContasPagar() {
                                                     : "#28a745",
                                     }}
                                 >
-                                    {campo === "data" && (
-                                        <>
-                                            <i className="fa-solid fa-calendar-days"></i>
-                                            <p>{new Date(selectedConta.data).toLocaleDateString()}</p>
-                                        </>
-                                    )}
-                                    {campo === "categoria" && (
-                                        <>
-                                            <i className="fa-solid fa-tag"></i>
-                                            <p>{selectedConta.categoria}</p>
-                                        </>
-                                    )}
-                                    {campo === "valor" && (
-                                        <>
-                                            <i className="fa-solid fa-dollar-sign"></i>
-                                            <p>R$ {selectedConta.valor.toFixed(2)}</p>
-                                        </>
-                                    )}
+                                    {campo === "data" &&
+                                        (isEditing ? (
+                                            <input
+                                                type="date"
+                                                value={selectedConta.data}
+                                                className={styles.inputEditar}
+                                                onChange={(e) =>
+                                                    setSelectedConta({ ...selectedConta, data: e.target.value })
+                                                }
+                                            />
+                                        ) : (
+                                            <>
+                                                <i className="fa-solid fa-calendar-days"></i>
+                                                <p>{new Date(selectedConta.data).toLocaleDateString()}</p>
+                                            </>
+                                        ))}
+                                    {campo === "categoria" &&
+                                        (isEditing ? (
+                                            <input
+                                                type="text"
+                                                value={selectedConta.categoria}
+                                                className={styles.inputEditar}
+                                                onChange={(e) =>
+                                                    setSelectedConta({
+                                                        ...selectedConta,
+                                                        categoria: e.target.value,
+                                                    })
+                                                }
+                                            />
+                                        ) : (
+                                            <>
+                                                <i className="fa-solid fa-tag"></i>
+                                                <p>{selectedConta.categoria}</p>
+                                            </>
+                                        ))}
+                                    {campo === "valor" &&
+                                        (isEditing ? (
+                                            <input
+                                                type="number"
+                                                value={selectedConta.valor}
+                                                className={styles.inputEditar}
+                                                onChange={(e) =>
+                                                    setSelectedConta({
+                                                        ...selectedConta,
+                                                        valor: Number(e.target.value),
+                                                    })
+                                                }
+                                            />
+                                        ) : (
+                                            <>
+                                                <i className="fa-solid fa-dollar-sign"></i>
+                                                <p>R$ {selectedConta.valor.toFixed(2)}</p>
+                                            </>
+                                        ))}
                                 </div>
                             ))}
                         </div>
+                        <div className={styles.modalFooter}>
+                            {isEditing ? (
+                                <>
+                                    <button
+                                        className="btn btn-success me-2"
+                                        onClick={() => {
+                                            const updated = contas.map((c) =>
+                                                c.id === selectedConta.id ? selectedConta : c
+                                            );
+                                            setContas(updated);
+                                            localStorage.setItem("contas", JSON.stringify(updated));
+                                            setIsEditing(false);
+                                            setSelectedConta(null);
+                                        }}
+                                    >
+                                        Salvar
+                                    </button>
 
-                        <button className={styles.closeButton} onClick={() => setSelectedConta(null)}>Fechar</button>
+                                    <button
+                                        className="btn btn-danger"
+                                        onClick={() => setIsEditing(false)}
+                                    >
+                                        Cancelar
+                                    </button>
+                                </>
+                            ) : (
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={() => setSelectedConta(null)}
+                                >
+                                    Fechar
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
-
         </div>
     )
 }
