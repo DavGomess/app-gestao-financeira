@@ -236,6 +236,18 @@
     color: #333;
 }
 
+
+.inputEditarDate {
+    width: 26rem;
+    border: none;
+    background-color: #eef2f7;
+    background: transparent;
+    outline: none;
+    font-size: 1rem;
+    padding: 4px;
+}
+
+
 .closeButton {
     align-self: flex-end;
     padding: 0.5rem 1rem;

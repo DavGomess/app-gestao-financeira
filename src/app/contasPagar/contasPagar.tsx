@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import styles from "./contasPagar.module.css"
 import { ContaLocal } from "../../types/CriarContaInput";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 
 
@@ -8,6 +10,8 @@ export default function ContasPagar() {
     const [contas, setContas] = useState<ContaLocal[]>([])
     const [selectedConta, setSelectedConta] = useState<ContaLocal | null>(null)
     const [isEditing, setIsEditing] = useState(false);
+    const [novaData, setNovaData] = useState<Date | null>(null);
+
 
 
 
@@ -38,7 +42,7 @@ export default function ContasPagar() {
             nome: formData.get("nome"),
             valor: formData.get("valor"),
             categoria: formData.get("categoria"),
-            data: formData.get("data"),
+            data: novaData ? novaData.toISOString() : "",
             status: "pendente"
         };
         const res = await fetch("http://localhost:4000/contasPagar", {
@@ -167,7 +171,12 @@ export default function ContasPagar() {
                         </div>
                         <div className={styles.inputFormulario}>
                             <label htmlFor="data">Data</label>
-                            <input type="date" id="data" name="data" required />
+                            <DatePicker
+                                selected={novaData}
+                                onChange={(date: Date | null) => setNovaData(date)}
+                                dateFormat="dd/MM/yyyy"
+                                className={styles.inputEditar}
+                            />
                         </div>
                     </div>
                     <button type="submit" className={styles.buttonAdd} >+ Adicionar</button>
@@ -218,13 +227,16 @@ export default function ContasPagar() {
                                 >
                                     {campo === "data" &&
                                         (isEditing ? (
-                                            <input
-                                                type="date"
-                                                value={selectedConta.data}
-                                                className={styles.inputEditar}
-                                                onChange={(e) =>
-                                                    setSelectedConta({ ...selectedConta, data: e.target.value })
+                                            <DatePicker
+                                                selected={selectedConta.data ? new Date(selectedConta.data) : null}
+                                                onChange={(date: Date | null) =>
+                                                    setSelectedConta({
+                                                        ...selectedConta,
+                                                        data: date ? date.toISOString() : "",
+                                                    })
                                                 }
+                                                dateFormat="dd/MM/yyyy"
+                                                className={styles.inputEditarDate}
                                             />
                                         ) : (
                                             <>
