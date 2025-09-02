@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import styles from "./contasPagar.module.css"
 import { ContaLocal } from "../../types/CriarContaInput";
+import CategoriaModal  from "../components/CategoriaModal";  
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { definirStatus } from "@/utils/status";
 
 
 
@@ -11,9 +13,22 @@ export default function ContasPagar() {
     const [selectedConta, setSelectedConta] = useState<ContaLocal | null>(null)
     const [isEditing, setIsEditing] = useState(false);
     const [novaData, setNovaData] = useState<Date | null>(null);
+    const [selectedCategoria, setSelectedCategoria] = useState<string>("");
+    const [openModal, setOpenModal] = useState<null | 'categoria'>(null);
 
+    const handleOpenCategoriaModal = () => setOpenModal('categoria');
+    const handleCloseModal = () => setOpenModal(null);
 
+    const handleSelectCategoria = (categorias: string[]) => {
+        setSelectedCategoria(categorias[0] || "");
+        handleCloseModal();
+    };
 
+    const displayCategorias = () => {
+    if (selectedCategoria.length === 0) return "Categoria";
+    if (selectedCategoria.length === 1) return selectedCategoria[0];
+    return selectedCategoria || "Categoria";
+};
 
     useEffect(() => {
         const contasLocal = localStorage.getItem("contas");
@@ -37,13 +52,14 @@ export default function ContasPagar() {
         const form = e.currentTarget;
 
         const formData = new FormData(form);
+        const dataConta = novaData ? novaData.toISOString() : "";
         const data = {
             id: Date.now(),
             nome: formData.get("nome"),
             valor: formData.get("valor"),
-            categoria: formData.get("categoria"),
-            data: novaData ? novaData.toISOString() : "",
-            status: "pendente"
+            categoria: selectedCategoria,
+            data: dataConta,
+            status: definirStatus(dataConta)
         };
         const res = await fetch("http://localhost:4000/contasPagar", {
             method: "POST",
@@ -60,6 +76,8 @@ export default function ContasPagar() {
             localStorage.setItem("contas", JSON.stringify(contasAtualizadas));
 
             form.reset();
+            setNovaData(null);
+            setSelectedCategoria("");
         }
     };
 
@@ -167,7 +185,11 @@ export default function ContasPagar() {
                         </div>
                         <div className={styles.inputFormulario}>
                             <label htmlFor="categoria">Categoria</label>
-                            <input type="text" id="categoria" name="categoria" required />
+                            <button type="button" onClick={handleOpenCategoriaModal}>
+                                {displayCategorias()}
+                                <i className="bi bi-chevron-down"></i>
+                                
+                            </button>
                         </div>
                         <div className={styles.inputFormulario}>
                             <label htmlFor="data">Data</label>
@@ -290,16 +312,27 @@ export default function ContasPagar() {
                                 <>
                                     <button
                                         className="btn btn-success me-2"
-                                        onClick={() => {
+                                        onClick={async () => {
+                                            if (!selectedConta) return;
+
+                                            const novoStatus = definirStatus(selectedConta.data);
+
+                                            const contaAtualizada = { ...selectedConta, status: novoStatus}
+
                                             const updated = contas.map((c) =>
-                                                c.id === selectedConta.id ? selectedConta : c
-                                            );
+                                            c.id === contaAtualizada.id ? contaAtualizada : c);
                                             setContas(updated);
                                             localStorage.setItem("contas", JSON.stringify(updated));
+
+                                            await fetch(`http://localhost:4000/contasPagar/${selectedConta.id}`, {
+                                                method: "PUT",
+                                                body: JSON.stringify(contaAtualizada),
+                                                headers: { "Content-Type": "application/json" },
+                                            })
+
                                             setIsEditing(false);
                                             setSelectedConta(null);
-                                        }}
-                                    >
+                                        }}>
                                         Salvar
                                     </button>
 
@@ -322,6 +355,9 @@ export default function ContasPagar() {
                     </div>
                 </div>
             )}
+        {openModal === 'categoria' && (
+                        <CategoriaModal multiple={false} onClose={handleCloseModal} onSelect={handleSelectCategoria} />
+                    )}
         </div>
     )
 }
