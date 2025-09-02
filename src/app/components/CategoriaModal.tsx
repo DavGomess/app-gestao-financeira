@@ -3,9 +3,10 @@ import { useState } from "react";
 type CategoriaModalProps = {
     onClose: () => void;
     onSelect: (categoria: string[]) => void;
+    multiple?: boolean;
 };
 
-export default function CategoriaModal({ onClose, onSelect }: CategoriaModalProps) {
+export default function CategoriaModal({ onClose, onSelect, multiple = true }: CategoriaModalProps) {
     const [selectedTemp, setSelectedTemp] = useState<Array<{ tipo: string; categoria: string}>>([]);
 
     const categorias = {
@@ -20,6 +21,11 @@ export default function CategoriaModal({ onClose, onSelect }: CategoriaModalProp
     }
 
     const toggleCategoria = (tipo: string, categoria: string) => {
+        if (!multiple) {
+            setSelectedTemp([{ tipo, categoria }]);
+            return;
+        }
+
         const isTodos = categoria === "Todos";
         const todasCategorias = categorias[tipo as keyof typeof categorias];
 
@@ -48,7 +54,7 @@ export default function CategoriaModal({ onClose, onSelect }: CategoriaModalProp
         }
     };
 
-   
+
 
 return (
     <div
@@ -70,7 +76,9 @@ return (
                             <ul className=" mb-3 modalList">
                                 {lista.map((categoria) => {
                                     const isSelecionado = selectedTemp.some(
-                                        (item) => item.tipo === tipo && item.categoria === categoria)
+                                        (item) => item.tipo === tipo && item.categoria === categoria);
+                                        if (!multiple && categoria === "Todos") return null;
+
                                     return (
                                         <li
                                             key={categoria}
