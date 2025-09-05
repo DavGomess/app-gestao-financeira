@@ -67,7 +67,7 @@ export default function PeriodoModal({ onClose, onSelect }: PeriodoModalProps) {
                                     selected={dataInicial}
                                     onChange={(date) => {
                                         setDataInicial(date);
-                                        setSelectedTemp(null); // limpa seleção rápida
+                                        setSelectedTemp(null); 
                                     }}
                                     placeholderText="Data Inicial"
                                     className={styles.inputDate}
