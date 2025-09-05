@@ -59,7 +59,7 @@ export default function PeriodoModal({ onClose, onSelect }: PeriodoModalProps) {
                             ))}
                         </ul>
                         <div className="mt-4">
-                            <h5>Persolalizar</h5>
+                            <h5>Personalizar</h5>
                             <p className="fw-light">Você só pode consultar períodos de até 2 anos</p>
                             <div className="d-flex flex-column gap-2 w-100">
                                 <div className={styles.containerDate}>
@@ -82,7 +82,7 @@ export default function PeriodoModal({ onClose, onSelect }: PeriodoModalProps) {
                                     selected={dataFinal}
                                     onChange={(date) => {
                                         setDataFinal(date);
-                                        setSelectedTemp(null); // limpa seleção rápida
+                                        setSelectedTemp(null); 
                                     }}
                                     placeholderText="Data Final"
                                     className={styles.inputDate}
@@ -95,11 +95,11 @@ export default function PeriodoModal({ onClose, onSelect }: PeriodoModalProps) {
                         </div>
                     </div>
                     <div className="modal-footer">
-                        <button className="btn btn-outline-secondary" onClick={handleConfirm}
+                        <button className="btn btn-primary" onClick={handleConfirm}
                         disabled={!isBotaoConfirmarAtivo}>
                             Confirmar
                         </button>
-                        <button className="btn btn-secondary" onClick={onClose}>
+                        <button className="btn btn-danger" onClick={onClose}>
                             Fechar
                         </button>
                     </div>
