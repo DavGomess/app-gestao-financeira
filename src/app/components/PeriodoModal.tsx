@@ -2,33 +2,43 @@ import { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import styles from '../transacoes/transacoes.module.css';
-
+import { PeriodoSelecionado } from '@/types/CriarContaInput';
+import ToastMessage from "@/app/components/ToastMessage"
 
 type PeriodoModalProps = {
     onClose: () => void;
-    onSelect: (periodo: string) => void;
+    onSelect: (periodo: PeriodoSelecionado) => void;
 };
 
 export default function PeriodoModal({ onClose, onSelect }: PeriodoModalProps) {
     const [selectedTemp, setSelectedTemp] = useState<string | null>(null);
     const [dataInicial, setDataInicial] = useState<Date | null>(null);
     const [dataFinal, setDataFinal] = useState<Date | null>(null);
+    const [toastMessage, setToastMessage] = useState<{ message: string; type: string } | null>(null);
     
     const periodos = ["7 Dias", "15 Dias", "30 Dias", "90 Dias"];
 
+    const diffDias = dataInicial && dataFinal ? Math.floor((new Date(dataFinal).getTime() - new Date(dataInicial).getTime()) / (1000 * 60 * 60 * 24)) : 0;
+
     const handleConfirm = () => {
         if (selectedTemp) {
-            onSelect(selectedTemp);
+            const dias = parseInt(selectedTemp.split(" ")[0], 10);
+            onSelect({ tipo: "predefinido", dias });
         }else if (dataInicial && dataFinal) {
-            const formatar = (d: Date) => d.toLocaleDateString("pt-BR");
-            onSelect(`${formatar(dataInicial)} - ${formatar(dataFinal)}`);
+
+            if ( diffDias > 365) {
+                setToastMessage({ message: "O período personalizado não pode exceder 1 ano.", type: "danger" });
+                return;
+            }
+            onSelect({ tipo: "personalizado", inicio: dataInicial, fim: dataFinal });
         }
         onClose();
     }
 
-    const isBotaoConfirmarAtivo = selectedTemp !== null || (dataInicial !== null && dataFinal !== null);
+    const isBotaoConfirmarAtivo = selectedTemp !== null || (dataInicial !== null && dataFinal !== null && diffDias <= 365);
 
     return (
+        <>
         <div
             className="modal fade show d-block"
             tabIndex={-1}
@@ -51,7 +61,7 @@ export default function PeriodoModal({ onClose, onSelect }: PeriodoModalProps) {
                                     onClick={() => {
                                         setSelectedTemp(periodo)
                                         setDataInicial(null);
-                                        setDataInicial(null);
+                                        setDataFinal(null);
                                     }}
                                 >
                                     {periodo}
@@ -60,7 +70,7 @@ export default function PeriodoModal({ onClose, onSelect }: PeriodoModalProps) {
                         </ul>
                         <div className="mt-4">
                             <h5>Personalizar</h5>
-                            <p className="fw-light">Você só pode consultar períodos de até 2 anos</p>
+                            <p className="fw-light">Você só pode consultar períodos de até 1 ano</p>
                             <div className="d-flex flex-column gap-2 w-100">
                                 <div className={styles.containerDate}>
                                 <DatePicker
@@ -74,7 +84,7 @@ export default function PeriodoModal({ onClose, onSelect }: PeriodoModalProps) {
                                     dateFormat="dd/MM/yyyy"
                                     maxDate={new Date()}
                                 />
-                                <i className="bi bi-calendar-week fs-4 me-2"></i>
+                                <i className="bi bi-calendar-week fs-4 me-1 ms-1"></i>
                                 </div>
                                 
                                 <div className={styles.containerDate}>
@@ -83,13 +93,25 @@ export default function PeriodoModal({ onClose, onSelect }: PeriodoModalProps) {
                                     onChange={(date) => {
                                         setDataFinal(date);
                                         setSelectedTemp(null); 
+
+                                        if (dataInicial && date) {
+                                            const diff = Math.floor(
+                                                (new Date(date).getTime() - new Date(dataInicial).getTime()) / (1000 * 60 * 60 * 24)
+                                            );
+                                        if (diff > 365) {
+                                            setToastMessage({
+                                                message: "O período personalizado não pode exceder 1 ano.",
+                                                type: "danger"
+                                            });
+                                        }
+                                        }
                                     }}
                                     placeholderText="Data Final"
                                     className={styles.inputDate}
                                     dateFormat="dd/MM/yyyy"
                                     maxDate={new Date()}
                                 />
-                                <i className="bi bi-calendar-week fs-4 me-2"></i>
+                                <i className="bi bi-calendar-week fs-4 me-1 ms-1"></i>
                                 </div>
                             </div>
                         </div>
@@ -103,8 +125,13 @@ export default function PeriodoModal({ onClose, onSelect }: PeriodoModalProps) {
                             Fechar
                         </button>
                     </div>
+
                 </div>
             </div>
         </div>
+        {toastMessage && (
+            <ToastMessage key={toastMessage.message} id="periodo-toast" message={toastMessage.message} type="danger"/>
+        )}
+    </>
     )
 }
