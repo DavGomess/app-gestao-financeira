@@ -1,6 +1,6 @@
-import * as ContasPagarRepository from "../repository/ContasPagarRepository";
-import { definirStatus } from "../utils/status";
-import { CriarContaInput } from  "../types/CriarContaInput"
+import * as ContasPagarRepository from "../repository/ContasPagarRepository.ts";
+import { definirStatus } from "../utils/status.ts";
+import { CriarContaInput } from  "../types/CriarContaInput.ts"
 
 
 export class ContasService {
