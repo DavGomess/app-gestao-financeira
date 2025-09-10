@@ -1,5 +1,5 @@
-import { prisma } from "../lib/prisma"
-import { CriarContaInput } from "@/types/CriarContaInput";
+import { prisma } from "../lib/prisma.ts"
+import { CriarContaInput } from "@/types/CriarContaInput.ts";
 
 export const criarConta = (dados: CriarContaInput) => {
 
