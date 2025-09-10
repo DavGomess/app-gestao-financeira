@@ -22,7 +22,7 @@ export default function ToastMessage({ id, message, type = "primary" }: ToastPro
             })
         }
         return () => {
-            if (instance) instance.dispose();
+            instance?.dispose();
         };
 }, [message]);
 
