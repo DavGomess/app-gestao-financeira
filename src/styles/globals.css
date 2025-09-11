@@ -152,11 +152,13 @@ li.noActive:hover {
   box-shadow: 0 4px 16px rgba(0,0,0,0.1);
   font-family: "Inter", sans-serif;
   width: 20rem !important;
-  max-width: 100% !important;
+  height: 21rem !important;
+  max-width: 100% !important;  
 }
 
 .react-datepicker__month {
   width: 100% !important;
+  margin: 0rem !important;
 }
 
 .react-datepicker__header {
@@ -167,6 +169,10 @@ li.noActive:hover {
   justify-content: center; 
   align-items: center; 
   position: relative;
+  display: flex !important;
+  flex-direction: column  !important;
+  width: 20rem !important;
+  gap: 0.2rem !important;
 }
 
 .react-datepicker__current-month {
@@ -181,7 +187,7 @@ li.noActive:hover {
   width: 2rem !important;
   height: 2rem !important;
   display: flex;
-  justify-content: center;
+  justify-content: start;
   align-items: center;
   border-radius: 0.6rem;
 }
@@ -258,4 +264,64 @@ li.noActive:hover {
 .react-datepicker__day--outside-month {
   color: #c5c6c7 !important;
   font-weight: 400 !important;
+}
+
+
+.iconTrash {
+    width: 2.5rem;
+    height: 2.5rem;
+    color: #dc2626; 
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: background-color 0.2s ease;
+    margin-right: 0.2rem;
+}
+
+.iconTrash:hover {
+    background-color: #eeafaf; 
+}
+
+.iconPencil {
+    width: 2.5rem;
+    height: 2.5rem;
+    color: #0d6efd; 
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: background-color 0.2s ease;
+}
+
+.iconPencil:hover {
+    background-color: #a5c8ff; 
+}
+
+.iconArrowDown {
+    width: 2.3rem;
+    height: 2.3rem;
+    background-color: #fca5a5; 
+    color: #dc2626;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+}
+
+.iconArrowUp {
+    width: 2.3rem;
+    height: 2.3rem;
+    background-color: #86efac; 
+    color: #16a34a;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
 }
