@@ -4,11 +4,12 @@ import "@/styles/globals.css";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { SelectedProvider } from "@/contexts/SelectedContext";
+import { CategoriaProvider } from "@/contexts/CategoriaContext";
 
 
 const poppins = Poppins({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],   
+  weight: ["400", "500", "600", "700"],
   variable: "--font-poppins",
 });
 
@@ -31,7 +32,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${poppins.variable} ${geistMono.variable}`}>
         <SelectedProvider>
-        {children}
+          <CategoriaProvider>
+            {children}
+          </CategoriaProvider>
         </SelectedProvider>
       </body>
     </html>
