@@ -15,7 +15,6 @@ export class ContasPagarController {
         try {
             const { nome, valor, categoria, data } = req.body;
 
-      // Validação básica no controller
             if (!nome || !valor || !categoria || !data) {
             return res.status(400).json({ error: "Todos os campos são obrigatórios" });
         }
@@ -42,12 +41,9 @@ export class ContasPagarController {
 
     async editar(req: Request, res: Response) {
     try {
-        console.log("REQ BODY:", req.body);  // 👈 ver o que tá vindo
-        console.log("REQ PARAM ID:", req.params.id);
         const conta = await contasService.editarContaService(Number(req.params.id), req.body);
         return res.json(conta);
     } catch (error: unknown) {
-        console.error("ERRO NO PUT:", error); // 👈 logar o erro bruto
         const errorMessage = error instanceof Error ? error.message : String(error);
         return res.status(400).json({ error: errorMessage });
     }
