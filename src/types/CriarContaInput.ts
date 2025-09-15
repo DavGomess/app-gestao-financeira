@@ -39,3 +39,9 @@ export interface ToastProps {
     message: string;
     type?: "primary" | "success" | "danger" | "warning" | undefined;
 };
+
+export interface Categoria {
+    id:number;
+    nome: string;
+    tipo: "receita" | "despesa";
+}
