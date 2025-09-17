@@ -132,6 +132,8 @@ li.noActive:hover {
     gap: 0.5rem;
     padding: 0.5rem;
     justify-content: start;
+    overflow: auto;
+    max-height: 10rem;
 }
 
 .modalItem {
