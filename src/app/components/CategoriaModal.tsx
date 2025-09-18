@@ -4,14 +4,15 @@ type CategoriaModalProps = {
     onClose: () => void;
     onSelect: (categoria: string[]) => void;
     multiple?: boolean;
+    categorias: {
+    Receita: string[];
+    Despesa: string[];
+    };
 };
 
-export default function CategoriaModal({ onClose, onSelect, multiple = true }: CategoriaModalProps) {
+export default function CategoriaModal({ onClose, onSelect, multiple = true, categorias }: CategoriaModalProps) {
     const [selectedTemp, setSelectedTemp] = useState<Array<{ tipo: string; categoria: string}>>([]);
 
-    const categorias = {
-        Entradas: ["Freelance", "Investimentos", "Salário", "Vendas", "Todos"], Saídas: ["Alimentação", "Educação", "Compras", "Entretenimento", "Saúde", "Transporte", "Moradia", "Carro", "Todos",]
-    }
 
     const handleConfirm = () => {
         if (selectedTemp) {
@@ -52,7 +53,7 @@ export default function CategoriaModal({ onClose, onSelect, multiple = true }: C
                 }
             })
         }
-    };
+    };  
 
 
 
