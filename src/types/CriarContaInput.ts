@@ -20,10 +20,12 @@ export interface ContaLocal {
 
 export interface Transacao {
     id: number;
+    contaId: number;
     nome: string;
     valor: number;
     categoria: string;
     data: string;
+    tipo: "receita" | "despesa"; 
     status: string;
 }
 
@@ -44,4 +46,10 @@ export interface Categoria {
     id:number;
     nome: string;
     tipo: "receita" | "despesa";
+}
+
+export interface Orcamento {
+    id: number;
+    categoria: string;
+    valor: number;
 }
