@@ -7,7 +7,7 @@ import Transacoes from "./transacoes/transacoes";
 import Relatorios from "./relatorios/relatorios";
 import Metas from "./metas/metas";
 import Categorias from "./categorias/categorias";
-import Orcamento from "./orcamento/orcamento";
+import Orcamento from "./orcamento/orcamentos";
 import ContasPagar from "./contasPagar/contasPagar";
 import Configuracoes from "./configuracoes/configuracoes";
 import { useSelected } from "@/contexts/SelectedContext";
