@@ -1,14 +1,18 @@
 import { useEffect, useState } from "react";
+import { useCategorias } from "@/contexts/CategoriaContext";
+import CategoriaModal from "../components/CategoriaModal";
 import styles from "./contasPagar.module.css"
 import { ContaLocal } from "../../types/CriarContaInput";
-import CategoriaModal  from "../components/CategoriaModal";  
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { definirStatus } from "@/utils/status";
-
-
+import { categorias as categoriasFixas } from "../data/categorias";
+import { useTransacoes } from "@/contexts/TransacoesContext";
+import { getTipo } from "@/utils/getTipo";
 
 export default function ContasPagar() {
+    const { categorias } = useCategorias();
+    const { setTransacoes } = useTransacoes();
     const [contas, setContas] = useState<ContaLocal[]>([])
     const [selectedConta, setSelectedConta] = useState<ContaLocal | null>(null)
     const [isEditing, setIsEditing] = useState(false);
@@ -25,10 +29,20 @@ export default function ContasPagar() {
     };
 
     const displayCategorias = () => {
-    if (selectedCategoria.length === 0) return "Categoria";
-    if (selectedCategoria.length === 1) return selectedCategoria[0];
-    return selectedCategoria || "Categoria";
-};
+        if (!selectedCategoria) return "Categoria";
+        return selectedCategoria;
+    };
+
+    const categoriasCompletas = {
+        Receita: [
+            ...categoriasFixas.Receita.filter((c) => c !== "Todos"),
+            ...categorias.filter((c) => c.tipo === "receita").map((c) => c.nome),
+        ],
+        Despesa: [
+            ...categoriasFixas.Despesa.filter((c) => c !== "Todos"),
+            ...categorias.filter((c) => c.tipo === "despesa").map((c) => c.nome),
+        ],
+    };
 
     useEffect(() => {
         const contasLocal = localStorage.getItem("contas");
@@ -53,27 +67,44 @@ export default function ContasPagar() {
 
         const formData = new FormData(form);
         const dataConta = novaData ? novaData.toISOString() : "";
-        const data = {
+        const conta = {
             id: Date.now(),
             nome: formData.get("nome"),
-            valor: formData.get("valor"),
+            valor: Number(formData.get("valor")),
             categoria: selectedCategoria,
             data: dataConta,
             status: definirStatus(dataConta)
         };
         const res = await fetch("http://localhost:4000/contasPagar", {
             method: "POST",
-            body: JSON.stringify(data),
+            body: JSON.stringify(conta),
             headers: { "Content-Type": "application/json" },
         });
 
         if (res.ok) {
-            const novaConta = await res.json();
+            const contaSalva = await res.json();
 
-            const contasAtualizadas = [...contas, novaConta];
+            const contasAtualizadas = [...contas, contaSalva];
             setContas(contasAtualizadas)
-
             localStorage.setItem("contas", JSON.stringify(contasAtualizadas));
+
+            const novaTransacao = {
+                id: Date.now(),
+                contaId: contaSalva.id,
+                nome: contaSalva.nome,
+                valor: contaSalva.valor,
+                categoria: contaSalva.categoria,
+                data: contaSalva.data,
+                status: contaSalva.status,
+                tipo: getTipo(contaSalva.categoria)
+            };
+
+
+            setTransacoes((prev) => {
+                const atualizadas = [...prev, novaTransacao];
+                localStorage.setItem("transacoes", JSON.stringify(atualizadas));
+                return atualizadas
+            })
 
             form.reset();
             setNovaData(null);
@@ -111,9 +142,14 @@ export default function ContasPagar() {
         });
 
         if (res.ok) {
-            const contasDeletas = contas.filter(c => c.id !== conta.id)
-            setContas(contasDeletas)
-            localStorage.setItem("contas", JSON.stringify(contasDeletas))
+            const contasDeletadas = contas.filter(c => c.id !== conta.id)
+            setContas(contasDeletadas)
+
+            setTransacoes(prev => {
+                const atualizado = prev.filter(t => t.contaId !== conta.id)
+                localStorage.setItem("transacoes", JSON.stringify(atualizado))
+                return atualizado;
+            })
         }
     }
 
@@ -138,7 +174,7 @@ export default function ContasPagar() {
                         <div className={styles.listaContasButtons}>
                             <button className="btn">
                                 <i
-                                    className="bi bi-pencil"
+                                    className="bi bi-pencil iconPencil"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         setSelectedConta(conta);
@@ -148,7 +184,7 @@ export default function ContasPagar() {
                             </button>
                             <button className="btn">
                                 <i
-                                    className="bi bi-trash"
+                                    className="bi bi-trash iconTrash"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         deletarConta(conta);
@@ -183,12 +219,12 @@ export default function ContasPagar() {
                             <label htmlFor="valor">Valor</label>
                             <input type="number" id="valor" name="valor" placeholder="Insira o valor" required />
                         </div>
-                        <div className={styles.inputFormulario}>
+                        <div className={styles.inputFormularioCategoria}>
                             <label htmlFor="categoria">Categoria</label>
                             <button type="button" onClick={handleOpenCategoriaModal}>
                                 {displayCategorias()}
                                 <i className="bi bi-chevron-down"></i>
-                                
+
                             </button>
                         </div>
                         <div className={styles.inputFormulario}>
@@ -317,10 +353,10 @@ export default function ContasPagar() {
 
                                             const novoStatus = definirStatus(selectedConta.data);
 
-                                            const contaAtualizada = { ...selectedConta, status: novoStatus}
+                                            const contaAtualizada = { ...selectedConta, status: novoStatus }
 
                                             const updated = contas.map((c) =>
-                                            c.id === contaAtualizada.id ? contaAtualizada : c);
+                                                c.id === contaAtualizada.id ? contaAtualizada : c);
                                             setContas(updated);
                                             localStorage.setItem("contas", JSON.stringify(updated));
 
@@ -355,9 +391,14 @@ export default function ContasPagar() {
                     </div>
                 </div>
             )}
-        {openModal === 'categoria' && (
-                        <CategoriaModal multiple={false} onClose={handleCloseModal} onSelect={handleSelectCategoria} />
-                    )}
+            {openModal === 'categoria' && (
+                <CategoriaModal
+                    multiple={false}
+                    onClose={handleCloseModal}
+                    onSelect={handleSelectCategoria}
+                    categorias={categoriasCompletas}
+                />
+            )}
         </div>
     )
 }
