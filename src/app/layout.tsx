@@ -5,6 +5,9 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { SelectedProvider } from "@/contexts/SelectedContext";
 import { CategoriaProvider } from "@/contexts/CategoriaContext";
+import { TransacoesProvider } from "@/contexts/TransacoesContext";
+import { OrcamentosProvider } from "@/contexts/OrcamentosContext";
+import { MetasProvider } from "@/contexts/MetasContext";
 
 
 const poppins = Poppins({
@@ -33,7 +36,13 @@ export default function RootLayout({
       <body className={`${poppins.variable} ${geistMono.variable}`}>
         <SelectedProvider>
           <CategoriaProvider>
-            {children}
+            <TransacoesProvider>
+              <OrcamentosProvider>
+                <MetasProvider>
+                {children}
+                </MetasProvider>
+              </OrcamentosProvider>
+            </TransacoesProvider>
           </CategoriaProvider>
         </SelectedProvider>
       </body>
