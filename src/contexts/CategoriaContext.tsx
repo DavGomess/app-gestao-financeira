@@ -15,6 +15,16 @@ export const CategoriaProvider = ({ children }: { children: React.ReactNode }) =
     const [categorias, setCategorias] = useState<Categoria[]>([]);
 
     useEffect(() => {
+        const saved = localStorage.getItem("categorias");
+        if (saved) {
+            try {
+                setCategorias(JSON.parse(saved));
+                return;
+            } catch (error) {
+                console.error("Error ao carregar categorias do localStorage", error)
+            }
+        }
+
         const fetchCategorias = async () => {
             try {
                 const res = await fetch("http://localhost:4000/categorias");
@@ -27,6 +37,10 @@ export const CategoriaProvider = ({ children }: { children: React.ReactNode }) =
         };
         fetchCategorias();
     }, []);
+
+    useEffect(() => {
+        localStorage.setItem("categorias", JSON.stringify(categorias))
+    }, [categorias])
 
     const addCategoria = async (categoria: Omit<Categoria, "id">) => {
         try {
