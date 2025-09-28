@@ -6,11 +6,10 @@
     background-color: #fff;
     border-radius: 0.5rem;
     padding: 0.5rem 1rem;
-    /* border: 1px solid red; */
     display: flex;
     align-items: center;
     gap: 3rem;
-    
+    width: 68.5rem;
 }
 
 .cardFiltro i {
@@ -18,12 +17,10 @@
 }
 
 .groupInputs {
-    /* border: 1px solid aqua; */
     display: flex;
     gap: 1rem;
-    width: 60rem;
-    /* justify-content: space-between;*/
-} 
+    width: 100%;
+}
 
 .inputPesquisar {
     position: relative;
@@ -39,7 +36,7 @@
 }
 
 .inputPesquisar input {
-    width: 30rem;
+    width: 24rem;
     padding: 0.5rem 0.5rem 0.5rem 2.5rem;
     border: 1px solid #ccc;
     border-radius: 0.5rem;
@@ -71,6 +68,22 @@
     align-items: center;
 }
 
+.containerDate {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    justify-content: space-between;
+    border-radius: 0.4rem;
+    padding: 0.2rem 0rem; 
+}
+
+.inputDate {
+    border: none;
+    font-size: 1rem;
+    padding: 0.4rem;
+    width: 27rem;
+}
+
 .inputCategoria {
     position: relative;
     display: flex;
@@ -96,20 +109,123 @@
     color: #000;
 }
 
-.containerDate {
-    border: 1px solid;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.cardTransacoes {
+    background-color: #ffffff; 
+    margin-top: 2rem;
+    padding: 1.5rem;
     border-radius: 0.5rem;
-    padding: 0.5rem 0rem;
-    border: 1px solid #ccc;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    width: 68.5rem;
 }
 
-.inputDate{
-    /* border: 1px solid #d01919; */
-    border: none;
-    height: 2.5rem;
-    width: 27rem;
-    padding-left: 0.5rem;
+.cardTransacoes h3 {
+    color: #000000; 
+    margin-bottom: 1rem;
 }
+
+.cardTransacoes p {
+    font-size: 1.5rem;
+    text-align: center;
+}
+
+.listaTransacoes {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem; 
+    overflow: auto;
+    max-height: 23rem;
+}
+
+.itemTransacao {   
+    background-color: #f5f5f5;
+    border-radius: 0.5rem;
+    min-height: 3rem;
+    gap: 1rem;
+    margin-right: 0.5rem;
+}
+
+.itemTransacao:hover {   
+    box-shadow: 0px 5px 16px -11px rgba(0,0,0,0.75);
+
+}
+
+.infoTransacao {
+    display: flex;
+    justify-content: space-between; 
+    width: 100%;
+    align-items: center;
+    
+    padding: 0rem 0.5rem;
+
+}
+
+.ladoEsquerdoTransacao {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+
+}
+
+
+.textosTransacao {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-right: 1rem;
+    color: #0d6efd;
+}
+
+.textosTransacao h6 {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: #000000;
+}
+
+.textosTransacao p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+.dataTransacao {
+    display: flex;
+    align-items: flex-start;
+    align-self: flex-start;
+}
+
+.dataTransacao span {
+    font-size: 0.75rem;
+    color: #374151;
+}
+
+.ladoDireitoTransacao {
+    display: flex;
+    align-items: center;
+    height: 3rem;
+}
+
+.valorTransacao {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.valorTransacao h5 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.vermelhoTextoValor {
+    color: #dc2626; 
+}
+
+.verdeTextoValor {
+    color: #16a34a;
+
+}
+
