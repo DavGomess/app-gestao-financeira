@@ -1,7 +1,7 @@
 "use client";
 
 import { Meta } from "@/types/CriarContaInput"
-import { createContext, ReactNode, useContext, useState } from "react";
+import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 
 interface MetasContextType {
     metas: Meta[];
@@ -14,6 +14,21 @@ const MetasContext = createContext<MetasContextType | undefined>(undefined);
 
 export function MetasProvider({ children }: { children: ReactNode }) {
     const [metas, setMetas] = useState<Meta[]>([]);
+
+    useEffect(() => {
+        const saved = localStorage.getItem("metas");
+        if (saved) {
+            try {
+                setMetas(JSON.parse(saved));
+            } catch (error) {
+                console.error("Error ao carregar metas", error)
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        localStorage.setItem("metas", JSON.stringify(metas));
+    }, [metas])
 
     const adicionarMeta = (meta: Omit<Meta, "id" | "valorAtual">) => {
         setMetas((prev) => [
