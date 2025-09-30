@@ -53,3 +53,12 @@ export interface Orcamento {
     categoria: string;
     valor: number;
 }
+
+export interface Meta {
+    id: number;
+    titulo: string;
+    categoria: string;
+    valor: number;  
+    valorAtual: number;
+    prazo: string;   
+}
