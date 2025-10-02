@@ -1,0 +1,199 @@
+.main {
+    padding: 1.2rem 1.2rem 0rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.cardBalancoMes {
+    background-color: #fff;
+    border-radius: 0.5rem;
+    padding: 1rem 1rem;
+    width: 68.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.cardBalancoMes h5 {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.containerInfoValores {
+    display: flex;
+    justify-content: space-between;
+}
+
+.cardInfoValor {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 20rem;
+    border: 0.5px solid #cccccc58;
+    border-radius: 0.5rem;
+    padding-top: 0.5rem;
+    
+}
+
+.cardAddOrcamento {
+    background-color: #fff;
+    padding: 0.8rem 1rem;
+    border-radius: 0.5rem;
+}
+
+.grupoInputs {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.inputCategoria {
+    display: flex;
+    flex-direction: column;
+    width: 28rem;
+}
+
+.inputValor {
+    display: flex;
+    flex-direction: column;  
+    width: 27rem;
+}
+
+.inputCategoria button {
+    background-color: #fff;
+    display: flex;
+    justify-content: space-between;
+}
+
+.inputCategoria button, .inputValor input {
+    border: 1px solid #ccc;
+    border-radius: 0.5rem;
+    padding: 0.6rem;
+    font-size: 0.9rem;
+    margin-top: 0.2rem;
+}
+
+
+.inputButton {
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    width: 10rem;
+}
+
+.inputButton button {
+    padding: 0.5rem;
+}
+
+.containerOrcamento {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.7rem;
+    max-height: 17rem;
+    overflow: auto;
+} 
+
+.containerOrcamento::-webkit-scrollbar {
+    width: 0.5rem; 
+    
+}
+
+.containerOrcamento::-webkit-scrollbar-track {
+    background-color: #e1e7ef;
+    
+}
+
+.containerOrcamento::-webkit-scrollbar-thumb {
+    background-color: #828681; 
+    border-radius: 0.5rem;
+    
+}
+
+.containerOrcamento::-webkit-scrollbar-thumb:hover {
+    background-color: #828681c9; 
+    
+
+}
+
+.cardOrcamento {
+    background-color: #fff;
+    border-radius: 0.5rem;
+    width: 21rem;
+    padding: 0.5rem 1rem;
+    margin-right: 0.5rem;
+    
+}
+
+.cardOrcamentoExcedente {
+    border: 2px solid #dc3545;
+}
+
+.headerOrcamento {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.iconsOrcamento {
+    display: flex;
+    flex-direction: row;
+}
+
+.bodyOrcamento {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.infoProgresso {
+    display: flex;
+    justify-content: space-between;
+    height: 1.5rem;
+}
+
+.progressBar {
+    width: 100%;
+    height: 7px;
+    background: #eaecef; 
+    border-radius: 8px;
+    overflow: hidden    ;
+}
+
+
+
+.progressFill {
+    height: 100%;
+    background: #1f873c;
+    transition: width 0.3s ease;
+    
+}
+
+
+.infoGasto, .infoOrcamento  {
+    display: flex;
+    border-bottom: 0.5px solid #ccc;
+    justify-content: space-between;
+    height: 1.5rem;
+}
+
+.infoRestante  {
+    display: flex;
+    justify-content: space-between;
+    height: 1.5rem;
+}
+
+.infoMensagem {
+    border: 0.5px solid rgba(255, 0, 0, 0.278);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.60rem;
+    border-radius: 0.5rem;
+    color: #ba0000; 
+    background-color: #dc262623 ;
+}
+
+.infoMensagem h6 {
+    margin: 0rem;
+    font-weight: bold;
+}
