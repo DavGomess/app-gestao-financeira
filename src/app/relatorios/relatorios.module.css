@@ -1,0 +1,128 @@
+.main {
+    padding: 1.2rem 1.2rem 0rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.cardRelatorio {
+    background-color: #fff;
+    border-radius: 0.5rem;
+    padding: 1rem 1rem;
+    width: 68.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.cardRelatorio h3 {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.containerInputs  {
+    display: flex;
+    gap: 2rem;
+    align-items: start;
+}
+
+.infoInputsRelatorio {
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    width: 20rem;
+}
+
+.infoInputsMes {
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    width: 8rem;
+
+}
+
+.infoInputsMes input {
+    height: 2.330rem;
+    border: 1px solid #ccc;
+    padding-left: 0.5rem;
+    border-radius: 0.375rem;
+}
+
+.infoInputsAno {
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    width: 8rem;
+
+}
+
+.infoInputsAno input {
+    height: 2.330rem;
+    border: 1px solid #ccc;
+    padding-left: 0.5rem;
+    border-radius: 0.375rem;
+
+}
+
+
+.infoInputsPeriodo {
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    width: 10rem;
+}
+
+.infoInputsPeriodo div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0;
+}
+
+.infoInputsPeriodo input {
+    height: 2.330rem;
+    width: 10rem;
+    cursor: pointer;
+
+}
+
+.opcoesDisponiveis {
+    background-color: #fff;
+    border-radius: 0.5rem;
+    padding: 1rem 1rem;
+    width: 68.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.containerOpcoesDisponiveis {
+    display: flex;
+    gap: 2rem;
+}
+
+.cardOpcaoDisponivel {
+    border: 1px solid #ccc;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    width: 100%;
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+
+.infoOpcaoDisponivel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.infoOpcaoDisponivel p {
+    margin: 0;
+    font-weight: 400;
+}
+
+.infoOpcaoDisponivel button {
+    width: 100%;
+}
+
