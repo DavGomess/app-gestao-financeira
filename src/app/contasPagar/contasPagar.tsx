@@ -144,6 +144,7 @@ export default function ContasPagar() {
         if (res.ok) {
             const contasDeletadas = contas.filter(c => c.id !== conta.id)
             setContas(contasDeletadas)
+            localStorage.setItem("contas", JSON.stringify(contasDeletadas))
 
             setTransacoes(prev => {
                 const atualizado = prev.filter(t => t.contaId !== conta.id)
