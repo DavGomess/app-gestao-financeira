@@ -43,7 +43,7 @@ export default function Categorias() {
                 </form>
             </div>
 
-            <div className={styles.containerCateogrias}>
+            <div className={styles.containerCategorias}>
                 <div className={styles.categoriasReceitas}>
                     <div className='d-flex gap-2'>
                         <i className="bi bi-arrow-up iconArrowUp"></i>
@@ -59,7 +59,7 @@ export default function Categorias() {
                                         <button 
                                             className="btn p-0"
                                             onClick={() => deletarCategoria(categoriaObj)}>
-                                            <i className="bi bi-trash iconTrash "></i>
+                                            <i className="bi bi-trash iconTrash"></i>
                                         </button>
                                     )}
                                 </li>
