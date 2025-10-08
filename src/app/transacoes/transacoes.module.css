@@ -9,23 +9,36 @@
     display: flex;
     align-items: center;
     gap: 3rem;
-    width: 68.5rem;
+    width: 100%;
+    border: 1px solid #ccc;
 }
 
 .cardFiltro i {
     color: #0d6efd;
 }
 
+.containerFiltro {
+    display: flex;
+    width: 100%;
+    gap: 2rem;
+}
+
+.containerFiltro form {
+    flex: 1;
+}
+
 .groupInputs {
     display: flex;
     gap: 1rem;
     width: 100%;
+    flex: 1;
 }
 
 .inputPesquisar {
     position: relative;
     display: flex;
     align-items: center;
+    width: 60%;
 }
 
 .inputPesquisar i {
@@ -36,7 +49,7 @@
 }
 
 .inputPesquisar input {
-    width: 24rem;
+    width: 100%;
     padding: 0.5rem 0.5rem 0.5rem 2.5rem;
     border: 1px solid #ccc;
     border-radius: 0.5rem;
@@ -47,6 +60,7 @@
     position: relative;
     display: flex;
     align-items: center;
+    width: 50%;
 }
 
 .inputPeriodo i {
@@ -56,7 +70,7 @@
 }
 
 .inputPeriodo button {
-    width: 15rem;
+    width: 100%;
     padding: 0.5rem 0.5rem 0.5rem 1rem;
     border: 1px solid #ccc;
     border-radius: 0.5rem;
@@ -115,7 +129,8 @@
     padding: 1.5rem;
     border-radius: 0.5rem;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    width: 68.5rem;
+    width: 100%;
+    border: 1px solid #ccc;
 }
 
 .cardTransacoes h3 {
@@ -137,6 +152,7 @@
     gap: 0.5rem; 
     overflow: auto;
     max-height: 23rem;
+    padding-bottom: 1rem;
 }
 
 .itemTransacao {   
@@ -145,11 +161,11 @@
     min-height: 3rem;
     gap: 1rem;
     margin-right: 0.5rem;
+    border: 1px solid #cccccc4d;
 }
 
 .itemTransacao:hover {   
     box-shadow: 0px 5px 16px -11px rgba(0,0,0,0.75);
-
 }
 
 .infoTransacao {

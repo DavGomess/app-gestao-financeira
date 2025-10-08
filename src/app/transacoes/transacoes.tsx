@@ -96,6 +96,7 @@ export default function Transacoes() {
     return (
         <div className={styles.main}>
             <div className={styles.cardFiltro}>
+                <div className={styles.containerFiltro}>
                 <h2><i className="bi bi-funnel"></i> Filtros</h2>
                 <form>
                     <div className={styles.groupInputs}>
@@ -131,6 +132,7 @@ export default function Transacoes() {
                         </div>
                     </div>
                 </form>
+                </div>
             </div>
             <div className={styles.cardTransacoes}>
                 <h3 className="mb-3">Transações</h3>

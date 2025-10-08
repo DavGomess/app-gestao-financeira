@@ -10,7 +10,7 @@
     border: 1px solid #ccc;
     border-radius: 0.5rem;
     padding: 1rem;
-    width: 68.5rem;
+    width: 100%;
     display: flex;
     gap: 2rem;
 }
