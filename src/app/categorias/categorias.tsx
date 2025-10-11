@@ -1,9 +1,11 @@
 import { useCategorias } from "@/contexts/CategoriaContext";
 import styles from "./categorias.module.css";
 import { categorias as categoriasFixas } from "../data/categorias";
+import { useToast } from "@/contexts/ToastContext";
 
 export default function Categorias() {
     const { categorias, addCategoria, deletarCategoria } = useCategorias();
+    const { showToast } = useToast();
 
     const categoriasCompletas = {
         Receita: [
@@ -23,6 +25,7 @@ export default function Categorias() {
         const tipo = form.tipo.value.trim();
         if (!nome || !tipo) return;
         addCategoria({ nome, tipo });
+        showToast("Categoria criada com sucesso!", "success");
         form.reset();
     };
 
