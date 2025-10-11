@@ -8,12 +8,14 @@ export default function ToastMessage({ id, message, type = "primary" }: ToastPro
     const toastRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
-        if (!toastRef.current) return;
+        const toastEl = toastRef.current;
+        if (!toastEl) return;
 
         let instance: BsToast | null = null;
 
         if (typeof window !== "undefined") {
             import("bootstrap").then(({ Toast }) => {
+                if (!toastRef.current) return;
                 instance = Toast.getOrCreateInstance(toastRef.current!, {
                     autohide: true,
                     delay: 3000,
@@ -22,7 +24,9 @@ export default function ToastMessage({ id, message, type = "primary" }: ToastPro
             })
         }
         return () => {
-            instance?.dispose();
+            if (instance) {
+                instance?.dispose();
+            }
         };
 }, [message]);
 
@@ -32,7 +36,7 @@ export default function ToastMessage({ id, message, type = "primary" }: ToastPro
             <div
                 id={id}
                 ref={toastRef}
-                className={`toast align-items-center text-bg-${type} border-0`}
+                className={`toast align-items-center text-bg-${type} border-0 fs-6`}
                 role="alert"
                 aria-live="assertive"
                 aria-atomic="true"
