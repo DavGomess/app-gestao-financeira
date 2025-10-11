@@ -3,7 +3,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import styles from '../transacoes/transacoes.module.css';
 import { PeriodoSelecionado } from '@/types/CriarContaInput';
-import ToastMessage from "@/app/components/ToastMessage"
+import { useToast } from "@/contexts/ToastContext";
 
 type PeriodoModalProps = {
     onClose: () => void;
@@ -14,7 +14,7 @@ export default function PeriodoModal({ onClose, onSelect }: PeriodoModalProps) {
     const [selectedTemp, setSelectedTemp] = useState<string | null>(null);
     const [dataInicial, setDataInicial] = useState<Date | null>(null);
     const [dataFinal, setDataFinal] = useState<Date | null>(null);
-    const [toastMessage, setToastMessage] = useState<{ message: string; type: string } | null>(null);
+    const { showToast } = useToast();
     
     const periodos = ["7 Dias", "15 Dias", "30 Dias", "90 Dias"];
 
@@ -24,15 +24,15 @@ export default function PeriodoModal({ onClose, onSelect }: PeriodoModalProps) {
         if (selectedTemp) {
             const dias = parseInt(selectedTemp.split(" ")[0], 10);
             onSelect({ tipo: "predefinido", dias });
+            onClose();
         }else if (dataInicial && dataFinal) {
-
             if ( diffDias > 365) {
-                setToastMessage({ message: "O período personalizado não pode exceder 1 ano.", type: "danger" });
+                showToast("O período personalizado não pode exceder 1 ano.", "danger");
                 return;
             }
             onSelect({ tipo: "personalizado", inicio: dataInicial, fim: dataFinal });
+            onClose();
         }
-        onClose();
     }
 
     const isBotaoConfirmarAtivo = selectedTemp !== null || (dataInicial !== null && dataFinal !== null && diffDias <= 365);
@@ -99,10 +99,7 @@ export default function PeriodoModal({ onClose, onSelect }: PeriodoModalProps) {
                                                 (new Date(date).getTime() - new Date(dataInicial).getTime()) / (1000 * 60 * 60 * 24)
                                             );
                                         if (diff > 365) {
-                                            setToastMessage({
-                                                message: "O período personalizado não pode exceder 1 ano.",
-                                                type: "danger"
-                                            });
+                                            showToast("O período personalizado não pode exceder 1 ano.", "danger");
                                         }
                                         }
                                     }}
@@ -129,9 +126,6 @@ export default function PeriodoModal({ onClose, onSelect }: PeriodoModalProps) {
                 </div>
             </div>
         </div>
-        {toastMessage && (
-            <ToastMessage key={toastMessage.message} id="periodo-toast" message={toastMessage.message} type="danger"/>
-        )}
     </>
     )
 }
