@@ -6,19 +6,21 @@
 }
 
 .cardRelatorio {
-    background-color: #fff;
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    color: var(--text-color);
     border-radius: 0.5rem;
     padding: 1rem 1rem;
     width: 100%;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    border: 1px solid #ccc;
 }
 
-.cardRelatorio h3 {
+.cardRelatorio h2 {
     display: flex;
     gap: 0.5rem;
+    margin-bottom: 2rem;
 }
 
 .containerInputs {
@@ -34,17 +36,24 @@
     width: 30%;
 }
 
+.infoInputsRelatorio select {
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--input-text);
+}
+
 .infoInputsMes {
     display: flex;
     flex-direction: column;
     justify-content: end;
     width: 15%;
-
 }
 
-.infoInputsMes input {
+.infoInputsMes select {
     height: 2.330rem;
-    border: 1px solid #ccc;
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--input-text);
     padding-left: 0.5rem;
     border-radius: 0.375rem;
 }
@@ -54,17 +63,16 @@
     flex-direction: column;
     justify-content: end;
     width: 15%;
-
 }
 
-.infoInputsAno input {
+.infoInputsAno select {
     height: 2.330rem;
-    border: 1px solid #ccc;
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--input-text);
     padding-left: 0.5rem;
     border-radius: 0.375rem;
-
 }
-
 
 .infoInputsPeriodo {
     display: flex;
@@ -84,18 +92,20 @@
     height: 2.330rem;
     width: 10rem;
     cursor: pointer;
-
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
 }
 
 .opcoesDisponiveis {
-    background-color: #fff;
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    color: var(--text-color);
     border-radius: 0.5rem;
     padding: 1rem 1rem;
     width: 100%;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    border: 1px solid #ccc;
 }
 
 .containerOpcoesDisponiveis {
@@ -104,7 +114,7 @@
 }
 
 .cardOpcaoDisponivel {
-    border: 1px solid #ccc;
+    border: 1px solid var(--card-border);
     display: flex;
     flex-direction: column;
     text-align: center;

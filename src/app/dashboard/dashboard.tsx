@@ -52,7 +52,7 @@ export default function Dashboard() {
     const { transacoes } = useTransacoes();
     const { categorias } = useCategorias();
     const COLORS = [
-        "#0206f8ff", "#b91c1c", "#334155", "#d97706", "#6b21a8", "#065f46", "#cf16b0ff", "#1e3a8a", "#ff0000ff", "#4338ca", "#0ec5c5ff", "#b45309", "#45b619ff", "#cf135eff", "#0c4a6e", "#4b5563"
+        "#e0d041ff", "#f19797ff", "#75d88eff", "#d97706", "#6b21a8", "#065f46", "#cf16b0ff", "#1e3a8a", "#a00606ff", "#4338ca", "#0ec5c5ff", "#b45309", "#45b619ff", "#cf135eff", "#0c4a6e", "#4b5563", "#8c68cfff", "#5900ffd7", "#a33d78ff", "#3d86a3ff"
     ];
 
     const categoriasCompletas = {

@@ -1,24 +1,26 @@
-// import { Transacao } from "@/types/CriarContaInput";
 import styles from "./metas.module.css"
 import { useCategorias } from "@/contexts/CategoriaContext";
-// import { useTransacoes } from "@/contexts/TransacoesContext";
 import { useMetas } from "@/contexts/MetasContext";
+import { useToast } from "@/contexts/ToastContext"
 import { useState } from "react";
 import CategoriaModal from "../components/CategoriaModal";
 import { categorias as categoriasFixas } from "../data/categorias";
 import DatePicker from "react-datepicker";
+import { Meta } from "@/types/CriarContaInput";
 
 
 export default function Metas() {
     const { categorias } = useCategorias();
-    // const { transacoes } = useTransacoes();
-    const { metas, adicionarMeta, removerMeta, adicionarValorMeta } = useMetas();
+    const { metas, adicionarMeta, removerMeta, editarMeta, adicionarValorMeta } = useMetas();
+    const { showToast } = useToast();
     const [titulo, setTitulo] = useState("");
     const [valorDesejado, setValorDesejado] = useState<string>("");
     const [openModal, setOpenModal] = useState<null | 'categoria'>(null);
     const [selectedCategoria, setSelectedCategoria] = useState<string>("");
     const [novaData, setNovaData] = useState<Date | null>(null);
     const [valorAdicionar, setValorAdicionar] = useState<Record<number, string>>({});
+    const [editandoMetaId, setEditandoMetaId] = useState<number | null>(null);
+    const [modoEdicao, setModoEdicao] = useState(false);
 
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -30,6 +32,7 @@ export default function Metas() {
             valorAtual: 0,
             prazo: novaData ? novaData.toISOString() : "",
         });
+        showToast("Meta criada com sucesso!", "success");
         setTitulo("");
         setValorDesejado("");
         setSelectedCategoria("");
@@ -91,11 +94,51 @@ export default function Metas() {
         return diffDias;
     };
 
+    const handleEditClick = (meta: Meta) => {
+        setModoEdicao(true);
+        setEditandoMetaId(meta.id);
+        setTitulo(meta.titulo);
+        setSelectedCategoria(meta.categoria);
+        setValorDesejado(meta.valor.toString());
+        setNovaData(meta.prazo ? new Date(meta.prazo) : null);
+    }
+
+    const handleEdit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        if (editandoMetaId === null) return;
+
+        const metaAtualizada: Meta = {
+            id: editandoMetaId,
+            titulo,
+            categoria: selectedCategoria,
+            valor: Number(valorDesejado),
+            valorAtual: metas.find((m) => m.id === editandoMetaId)?.valorAtual ?? 0,
+            prazo: novaData ? novaData.toISOString() : "",
+        };
+
+        editarMeta(metaAtualizada);
+        showToast("Meta editada com sucesso!", "success");
+
+        setModoEdicao(false);
+        setEditandoMetaId(null);
+        setTitulo("");
+        setValorDesejado("");
+        setSelectedCategoria("");
+        setNovaData(null);
+    }
+
     return (
         <div className={styles.main}>
             <div className={styles.cardNovaMeta}>
-                <h3><i className="bi bi-bullseye"></i>Criar Nova Meta</h3>
-                <form className={styles.formularioNovaMeta} onSubmit={handleSubmit}>
+                <h2><i className="bi bi-bullseye"></i>Criar Nova Meta</h2>
+                <form className={styles.formularioNovaMeta} onSubmit={(e) => {
+                    if (modoEdicao) {
+                        handleEdit(e);
+                    } else {
+                        handleSubmit(e);
+                    }
+                }}>
                     <div className={styles.infoNovaMeta}>
                         <div className={styles.grupoInput}>
                             <label htmlFor="titulo">Título</label>
@@ -122,10 +165,13 @@ export default function Metas() {
                                 onChange={(date: Date | null) => setNovaData(date)}
                                 dateFormat="dd/MM/yyyy"
                                 className={styles.inputEditar}
+                                required
                             />
                         </div>
                     </div>
-                    <button className="btn btn-primary" type="submit">+ Criar</button>
+                    <button className={`btn ${modoEdicao ? "btn-success" : "btn-primary"}`} type="submit">
+                        {modoEdicao ? "+ Salvar" : "+ Criar"}
+                    </button>
                 </form>
             </div>
             <div className={styles.containerCardsMetas}>
@@ -139,7 +185,7 @@ export default function Metas() {
                                     <h6 className="m-0">{meta.categoria}</h6>
                                 </div>
                                 <div className={styles.iconsMetas}>
-                                    <i className="bi bi-pencil iconPencil"></i>
+                                    <i className="bi bi-pencil iconPencil" onClick={() => handleEditClick(meta)}></i>
                                     <i className="bi bi-trash iconTrash" onClick={() => removerMeta(meta.id)}></i>
                                 </div>
                             </div>
@@ -160,9 +206,16 @@ export default function Metas() {
                                         <input type="number" value={valorAdicionar[meta.id] ?? ""} onChange={(e) => setValorAdicionar((prev) => ({
                                             ...prev,
                                             [meta.id]: (e.target.value)
-                                        }))} />
+                                        }))} 
+                                        disabled={meta.valorAtual >= meta.valor || calcularDiasRestantes(meta.prazo) <= 0}
+                                        />
                                     </div>
-                                    <button className="btn btn-primary h-50" onClick={() => handleAdicionarValor(meta.id)} type="button">+ adicionar</button>
+                                    <button 
+                                    className="btn btn-primary h-50"
+                                    onClick={() => handleAdicionarValor(meta.id)}
+                                    type="button"
+                                    disabled={meta.valorAtual >= meta.valor || calcularDiasRestantes(meta.prazo) <= 0}
+                                    >+ adicionar</button>
                                     <div>
                                         <label htmlFor="meta">Meta</label>
                                         <input type="number" value={meta.valor} disabled />
@@ -180,7 +233,7 @@ export default function Metas() {
                                         </h6>
                                     ) : (
                                         <h6 className={calcularDiasRestantes(meta.prazo) <= 3 ? styles.diasRestantesAlerta : styles.diasRestantesNormal}>
-                                            <span className="text-black">Prazo:</span>
+                                            <span>Prazo:</span>
                                             {calcularDiasRestantes(meta.prazo)} dias restantes
                                         </h6>
                                     )

@@ -1,18 +1,20 @@
 import { useEffect, useState } from "react";
-import { useCategorias } from "@/contexts/CategoriaContext";
-import CategoriaModal from "../components/CategoriaModal";
 import styles from "./contasPagar.module.css"
 import { ContaLocal } from "../../types/CriarContaInput";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { definirStatus } from "@/utils/status";
 import { categorias as categoriasFixas } from "../data/categorias";
-import { useTransacoes } from "@/contexts/TransacoesContext";
 import { getTipo } from "@/utils/getTipo";
+import { useCategorias } from "@/contexts/CategoriaContext";
+import CategoriaModal from "../components/CategoriaModal";
+import { useTransacoes } from "@/contexts/TransacoesContext";
+import { useToast } from "@/contexts/ToastContext";
 
 export default function ContasPagar() {
     const { categorias } = useCategorias();
     const { setTransacoes } = useTransacoes();
+    const { showToast } = useToast();
     const [contas, setContas] = useState<ContaLocal[]>([])
     const [selectedConta, setSelectedConta] = useState<ContaLocal | null>(null)
     const [isEditing, setIsEditing] = useState(false);
@@ -99,6 +101,7 @@ export default function ContasPagar() {
                 tipo: getTipo(contaSalva.categoria)
             };
 
+            showToast("Conta criada com sucesso!", "success");
 
             setTransacoes((prev) => {
                 const atualizadas = [...prev, novaTransacao];
@@ -369,6 +372,8 @@ export default function ContasPagar() {
 
                                             setIsEditing(false);
                                             setSelectedConta(null);
+                                            showToast("Conta Editada com sucesso!", "success");
+
                                         }}>
                                         Salvar
                                     </button>

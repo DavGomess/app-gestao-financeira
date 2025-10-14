@@ -6,8 +6,8 @@
 }
 
 .containerInfoValores {
-    background-color: #fff;
-    border: 1px solid #ccc;
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
     border-radius: 0.5rem;
     padding: 1rem;
     width: 100%;
@@ -70,11 +70,12 @@
 }
 
 .graficoBarra {
-    border: 1px solid #ccc;
+    border: 1px solid var(--card-border);
+    background-color: var(--card-bg);
+    color: var(--text-color);
     height: 25rem;
     padding: 1rem;
     border-radius: 0.5rem;
-    background-color: #fff;
     width: 49%;
     display: flex;
     flex-direction: column;
@@ -88,11 +89,12 @@
 
 
 .graficoPizza {
-    border: 1px solid #ccc;
+    border: 1px solid var(--card-border);
+    background-color: var(--card-bg);
+    color: var(--text-color);
     height: 25rem;
     padding: 1rem;
     border-radius: 0.5rem;
-    background-color: #fff;
     width: 49%;
 }
 

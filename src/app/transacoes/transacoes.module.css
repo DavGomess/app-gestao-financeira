@@ -3,14 +3,15 @@
 }
 
 .cardFiltro {
-    background-color: #fff;
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    color: var(--text-color);
     border-radius: 0.5rem;
     padding: 0.5rem 1rem;
     display: flex;
     align-items: center;
     gap: 3rem;
     width: 100%;
-    border: 1px solid #ccc;
 }
 
 .cardFiltro i {
@@ -44,16 +45,24 @@
 .inputPesquisar i {
     position: absolute;
     left: 1rem;
-    color: #000000;
     font-size: 1rem;
 }
 
 .inputPesquisar input {
     width: 100%;
     padding: 0.5rem 0.5rem 0.5rem 2.5rem;
-    border: 1px solid #ccc;
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--input-text);
     border-radius: 0.5rem;
     font-size: 1rem;
+    
+}
+
+.inputPesquisar input:focus {
+    border-color: var(--input-focus);
+    outline: none;
+    box-shadow: 0 0 0 2px var(--input-focus);
 }
 
 .inputPeriodo {
@@ -66,16 +75,17 @@
 .inputPeriodo i {
     margin-left: 1rem;
     font-size: 1rem;
-    color: #000;
+    color: var(--icon-color);
 }
 
 .inputPeriodo button {
     width: 100%;
     padding: 0.5rem 0.5rem 0.5rem 1rem;
-    border: 1px solid #ccc;
+    border: 1px solid var(--input-border);
+    background-color: var(--input-bg);
+    color: var(--input-text);
     border-radius: 0.5rem;
     font-size: 1rem;
-    background-color: white;
     text-align: left;
     display: flex;
     justify-content: space-between;
@@ -85,17 +95,27 @@
 .containerDate {
     display: flex;
     align-items: center;
-    border: 1px solid #ccc;
+    border: 1px solid var(--input-border);
     justify-content: space-between;
     border-radius: 0.4rem;
-    padding: 0.2rem 0rem; 
+    padding: 0.2rem 0.34rem; 
 }
 
 .inputDate {
     border: none;
-    font-size: 1rem;
+    border-radius: 0.4rem;
+    font-size: 1.1rem;
     padding: 0.4rem;
-    width: 27rem;
+    width: 26.5rem;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    padding-left: 1rem;
+}
+
+.containerDate input:focus {
+    border-color: var(--input-focus);
+    outline: none;
+    box-shadow: 0 0 0 2px var(--input-focus);
 }
 
 .inputCategoria {
@@ -107,10 +127,11 @@
 .inputCategoria button {
     width: 13rem;
     padding: 0.5rem 0.5rem 0.5rem 1rem;
-    border: 1px solid #ccc;
+    border: 1px solid var(--input-border);
+    background-color: var(--input-bg);
+    color: var(--input-text);
     border-radius: 0.5rem;
     font-size: 1rem;
-    background-color: white;
     text-align: left;
     display: flex;
     justify-content: space-between;
@@ -120,21 +141,21 @@
 .inputCategoria i {
     margin-left: 1rem;
     font-size: 1rem;
-    color: #000;
+    color: var(--icon-color);
 }
 
 .cardTransacoes {
-    background-color: #ffffff; 
+    background-color: var(--card-bg); 
+    border: 1px solid var(--card-border);
     margin-top: 2rem;
     padding: 1.5rem;
     border-radius: 0.5rem;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
     width: 100%;
-    border: 1px solid #ccc;
 }
 
 .cardTransacoes h3 {
-    color: #000000; 
+    color: var(--text-color);
     margin-bottom: 1rem;
 }
 
@@ -152,20 +173,38 @@
     gap: 0.5rem; 
     overflow: auto;
     max-height: 23rem;
-    padding-bottom: 1rem;
 }
 
+.listaTransacoes::-webkit-scrollbar {
+    width: 0.5rem; 
+}
+
+.listaTransacoes::-webkit-scrollbar-track {
+    background-color: var(--card-bg);
+}
+
+.listaTransacoes::-webkit-scrollbar-thumb {
+    background-color: #828681; 
+    border-radius: 0.5rem;
+}
+
+.listaTransacoes::-webkit-scrollbar-thumb:hover {
+    background-color: #828681c9; 
+}
+
+
 .itemTransacao {   
-    background-color: #f5f5f5;
+    background-color: var(--input-bg);
     border-radius: 0.5rem;
     min-height: 3rem;
     gap: 1rem;
     margin-right: 0.5rem;
-    border: 1px solid #cccccc4d;
+    border: .5px solid var(--input-border);
 }
 
 .itemTransacao:hover {   
-    box-shadow: 0px 5px 16px -11px rgba(0,0,0,0.75);
+    box-shadow: 0px 5px 16px -11px var(--li-shandow);
+    background-color: var(--liContaPagar-hover);
 }
 
 .infoTransacao {
@@ -173,38 +212,35 @@
     justify-content: space-between; 
     width: 100%;
     align-items: center;
-    
     padding: 0rem 0.5rem;
-
 }
 
 .ladoEsquerdoTransacao {
     display: flex;
     gap: 0.5rem;
     align-items: center;
-
 }
 
 
 .textosTransacao {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: start;
     margin-right: 1rem;
-    color: #0d6efd;
 }
 
 .textosTransacao h6 {
     margin: 0;
     font-weight: 600;
     font-size: 1.2rem;
-    color: #000000;
+    color: var(--text-color);
 }
 
 .textosTransacao p {
     margin: 0;
     font-size: 0.8rem;
-    color: #6b7280;
+    color: var(--menu-color);
+    text-align: start;
 }
 
 .dataTransacao {
@@ -215,13 +251,14 @@
 
 .dataTransacao span {
     font-size: 0.75rem;
-    color: #374151;
+    color: var(--menu-color);
 }
 
 .ladoDireitoTransacao {
     display: flex;
     align-items: center;
     height: 3rem;
+    margin-right: 2rem;
 }
 
 .valorTransacao {
@@ -232,7 +269,7 @@
 
 .valorTransacao h5 {
     margin: 0;
-    font-size: 1.3rem;
+    font-size: 1.4rem;
     font-weight: 600;
 }
 

@@ -7,6 +7,5 @@ export const menuItems = [
     { id: "orcamento", icon: "bi-pencil", label: "Orçamento", title: "Controle suas Despesas", description: "Estabeleça metas de gastos e monitore seu orçamento mensal."},
     { id: "contasPagar", icon: "bi-card-checklist", label: "Contas a Pagar", title: "Controle de Contas a Pagar", description: "Administre suas contas recorrentes com praticidade."},
     { id: "configuracoes", icon: "bi-gear", label: "Configurações", title: "Configure Do Seu Jeito", description: "Personalize o app com ajustes de sistema e integrações conforme suas necessidades."},
-    { id: "modoEscuro", icon: "bi-moon", label: "Modo Escuro" },
     { id: "sair", icon: "bi-box-arrow-left", label: "Sair" }
 ];

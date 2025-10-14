@@ -2,7 +2,7 @@ import { useState } from "react";
 import styles from "./transacoes.module.css";
 import CategoriaModal from "../components/CategoriaModal";
 import PeriodoModal from "../components/PeriodoModal";
-import { ContaLocal, PeriodoSelecionado } from "@/types/CriarContaInput";
+import { PeriodoSelecionado } from "@/types/CriarContaInput";
 import { categorias as categoriasFixas } from "../data/categorias";
 import { useCategorias } from "@/contexts/CategoriaContext";
 import { useTransacoes } from "@/contexts/TransacoesContext";
@@ -11,7 +11,7 @@ import { useTransacoes } from "@/contexts/TransacoesContext";
 
 export default function Transacoes() {
     const { categorias } = useCategorias();
-    const { transacoes, setTransacoes } = useTransacoes();
+    const { transacoes } = useTransacoes();
     const [openModal, setOpenModal] = useState<null | "categoria" | "periodo">(null);
     const [selectedCategoria, setSelectedCategoria] = useState<string[]>([]);
     const [selectedPeriodo, setSelectedPeriodo] = useState<PeriodoSelecionado | null>(null);
@@ -57,26 +57,6 @@ export default function Transacoes() {
         if (selectedCategoria.length === 0) return "Categoria";
         if (selectedCategoria.length === 1) return selectedCategoria[0];
         return `${selectedCategoria[0]}, +${selectedCategoria.length - 1}`;
-    };
-
-    const deletarConta = async (conta: ContaLocal) => {
-        try {
-            const res = await fetch(`http://localhost:4000/transacoes/${conta.id}`, {
-                method: "DELETE",
-            });
-
-            if (res.ok) {
-                setTransacoes((prev) => {
-                    const atualizado = prev.filter((t) => t.id !== conta.id);
-                    localStorage.setItem("transacoes", JSON.stringify(atualizado));
-                    return atualizado;
-                });
-            } else {
-                console.error("Erro ao deletar transação:", res.status);
-            }
-        } catch (error) {
-            console.error("Erro ao deletar transação:", error);
-        }
     };
 
     const categoriasCombinadas = {
@@ -166,19 +146,6 @@ export default function Transacoes() {
                                             ) : (
                                                 <h5 className={styles.verdeTextoValor}>+R$ {conta.valor}</h5>
                                             )}
-                                            <i
-                                                className="bi bi-trash iconTrash"
-                                                onClick={() =>
-                                                    deletarConta({
-                                                        id: conta.id,
-                                                        nome: conta.nome,
-                                                        categoria: conta.categoria,
-                                                        data: conta.data,
-                                                        valor: conta.valor,
-                                                        status: "pendente",
-                                                    })
-                                                }
-                                            ></i>
                                         </div>
                                     </div>
                                 </div>

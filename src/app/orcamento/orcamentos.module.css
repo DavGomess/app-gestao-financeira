@@ -6,10 +6,12 @@
 }
 
 .cardBalancoMes {
-    background-color: #fff;
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    color: var(--text-color);
     border-radius: 0.5rem;
     padding: 1rem 1rem;
-    width: 68.5rem;
+    width: 100%;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -30,14 +32,16 @@
     flex-direction: column;
     align-items: center;
     width: 20rem;
-    border: 0.5px solid #cccccc58;
+    border: 0.5px solid var(--card-border);
     border-radius: 0.5rem;
     padding-top: 0.5rem;
     
 }
 
 .cardAddOrcamento {
-    background-color: #fff;
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    color: var(--text-color);
     padding: 0.8rem 1rem;
     border-radius: 0.5rem;
 }
@@ -45,28 +49,24 @@
 .grupoInputs {
     display: flex;
     gap: 0.75rem;
+    width: 100%;
 }
 
 .inputCategoria {
     display: flex;
     flex-direction: column;
-    width: 28rem;
-}
-
-.inputValor {
-    display: flex;
-    flex-direction: column;  
-    width: 27rem;
+    width: 42%;
 }
 
 .inputCategoria button {
-    background-color: #fff;
     display: flex;
     justify-content: space-between;
 }
 
 .inputCategoria button, .inputValor input {
-    border: 1px solid #ccc;
+    border: 1px solid var(--input-border);
+    background-color: var(--input-bg);
+    color: var(--text-color);
     border-radius: 0.5rem;
     padding: 0.6rem;
     font-size: 0.9rem;
@@ -74,11 +74,23 @@
 }
 
 
-.inputButton {
+.inputValor {
     display: flex;
+    flex-direction: column;  
+    width: 42%;
+}
+
+.inputValor input:focus {
+    border-color: var(--input-focus);
+    outline: none;
+    box-shadow: 0 0 0 2px var(--input-focus);
+}
+
+
+.inputButton {    display: flex;
     flex-direction: column;
     justify-content: end;
-    width: 10rem;
+    width: 16%;
 }
 
 .inputButton button {
@@ -91,6 +103,7 @@
     gap: 1.7rem;
     max-height: 17rem;
     overflow: auto;
+    width: 100%;
 } 
 
 .containerOrcamento::-webkit-scrollbar {
@@ -116,7 +129,8 @@
 }
 
 .cardOrcamento {
-    background-color: #fff;
+    background-color: var(--card-bg);
+    color: var(--text-color);
     border-radius: 0.5rem;
     width: 21rem;
     padding: 0.5rem 1rem;
@@ -125,7 +139,7 @@
 }
 
 .cardOrcamentoExcedente {
-    border: 2px solid #dc3545;
+    border: 2px solid var(--orcamento-border); 
 }
 
 .headerOrcamento {
@@ -183,14 +197,14 @@
 }
 
 .infoMensagem {
-    border: 0.5px solid rgba(255, 0, 0, 0.278);
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0.60rem;
     border-radius: 0.5rem;
-    color: #ba0000; 
-    background-color: #dc262623 ;
+    border: 0.5px solid var(--prazoEncerrado-border);
+    color: var(--prazoEncerrado-color); 
+    background-color: var(--prazoEncerrado-bg) ;
 }
 
 .infoMensagem h6 {

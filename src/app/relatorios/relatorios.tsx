@@ -195,24 +195,37 @@ export default function Relatorios() {
         doc.save(getNomeAquivo("pdf"))
     };
 
-
     return (
         <div className={styles.main}>
             <div className={styles.cardRelatorio}>
-                <h3><i className="bi bi-file-earmark-arrow-down"></i>Opções de Exportação</h3>
+                <h2><i className="bi bi-file-earmark-arrow-down"></i>Opções de Exportação</h2>
                 <form>
                     <div className={styles.containerInputs}>
                         <div className={styles.infoInputsRelatorio}>
                             <label htmlFor="relatorio">Formato do Relatório</label>
-                            <select className="form-select" value={formato} onChange={(e) => setFormato(e.target.value)} required>
-                                <option value="" disabled>Selecione</option>
-                                <option value="completo">Relatório Completo</option>
-                                <option value="receita">Apenas Receitas</option>
-                                <option value="despesa">Apenas Gastos</option>
-                            </select>
+                            <div className="position-relative">
+                                <select className="form-select" value={formato} onChange={(e) => setFormato(e.target.value)} required>
+                                    <option value="" disabled>Selecione</option>
+                                    <option value="completo">Relatório Completo</option>
+                                    <option value="receita">Apenas Receitas</option>
+                                    <option value="despesa">Apenas Gastos</option>
+                                </select>
+                                <i
+                                    className="bi bi-chevron-down"
+                                    style={{
+                                        position: "absolute",
+                                        right: "0.75rem",
+                                        top: "50%",
+                                        transform: "translateY(-50%)",
+                                        pointerEvents: "none",
+                                        color: "var(--icon-color",
+                                    }}
+                                ></i>
+                            </div>
                         </div>
                         <div className={styles.infoInputsMes}>
                             <label htmlFor="mes">Mês Escolhido</label>
+                            <div className="position-relative">
                             <select className="form-select" value={mes} onChange={(e) => setMes(e.target.value)} required={!todosPeriodos} disabled={todosPeriodos}>
                                 <option value="" disabled>Selecione</option>
                                 <option value="1">Janeiro</option>
@@ -228,19 +241,44 @@ export default function Relatorios() {
                                 <option value="11">Novembro</option>
                                 <option value="12">Dezembro</option>
                             </select>
+                            <i
+                                    className="bi bi-chevron-down"
+                                    style={{
+                                        position: "absolute",
+                                        right: "0.75rem",
+                                        top: "50%",
+                                        transform: "translateY(-50%)",
+                                        pointerEvents: "none",
+                                        color: "var(--icon-color",
+                                    }}
+                                ></i>
+                            </div>
                         </div>
                         <div className={styles.infoInputsAno}>
                             <label htmlFor="ano">Ano Escolhido</label>
+                            <div className="position-relative">
                             <select className="form-select" value={ano} onChange={(e) => setAno(e.target.value)} required={!todosPeriodos} disabled={todosPeriodos}>
                                 <option value="" disabled>Selecione</option>
                                 <option value="2025">2025</option>
                                 <option value="2024">2024</option>
                             </select>
+                            <i
+                                    className="bi bi-chevron-down"
+                                    style={{
+                                        position: "absolute",
+                                        right: "0.75rem",
+                                        top: "50%",
+                                        transform: "translateY(-50%)",
+                                        pointerEvents: "none",
+                                        color: "var(--icon-color",
+                                    }}
+                                ></i>
+                            </div>
                         </div>
                         <div className={styles.infoInputsPeriodo}>
                             <label htmlFor="todosPeriodos">Todos os períodos</label>
                             <div className="form-check form-switch">
-                                <input className="form-check-input w-50 m-0" type="checkbox" id="todosPeriodos" checked={todosPeriodos} onChange={(e) => setTodosPeriodos(e.target.checked)} />
+                                <input className="form-check-input w-50 m-0 text-white" type="checkbox" id="todosPeriodos" checked={todosPeriodos} onChange={(e) => setTodosPeriodos(e.target.checked)} />
                             </div>
                         </div>
                         <hr />

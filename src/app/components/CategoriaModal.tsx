@@ -83,7 +83,7 @@ return (
                                     return (
                                         <li
                                             key={categoria}
-                                            className={` modalItem ${isSelecionado ? "liModalAtivo" : ""}`}
+                                            className={` modalItem ${isSelecionado ? "active" : ""}`}
                                             style={{ cursor: "pointer" }}
                                             
                                             onClick={() => toggleCategoria(tipo, categoria)}

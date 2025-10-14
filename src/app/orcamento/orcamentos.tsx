@@ -1,10 +1,11 @@
-import { useCategorias } from "@/contexts/CategoriaContext";
 import CategoriaModal from "../components/CategoriaModal";
 import styles from "./orcamentos.module.css"
 import { categorias as categoriasFixas } from "../data/categorias";
 import { Transacao } from "@/types/CriarContaInput";
-import { useOrcamentos } from "@/contexts/OrcamentosContext";
+import { useCategorias } from "@/contexts/CategoriaContext";
 import { useTransacoes } from "@/contexts/TransacoesContext";
+import { useOrcamentos } from "@/contexts/OrcamentosContext";
+import { useToast } from "@/contexts/ToastContext";
 import { useState } from "react";
 
 
@@ -12,6 +13,7 @@ export default function Orcamento() {
     const { categorias } = useCategorias();
     const { transacoes } = useTransacoes();
     const { orcamentos, adicionarOrcamento, removerOrcamento, editarOrcamento } = useOrcamentos();
+    const { showToast } = useToast();
 
     const [selectedCategoria, setSelectedCategoria] = useState<string>("");
     const [openModal, setOpenModal] = useState<null | 'categoria'>(null);
@@ -21,14 +23,26 @@ export default function Orcamento() {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        if (!selectedCategoria) return;
+        if (orcamentos.length >= 1 && editandoOrcamentoId === null) {
+            showToast("Já existe um orçamento ativo. Edite ou remova antes de criar outro.", "warning");
+            return;
+        }
+
+        if (!selectedCategoria) {
+            showToast("Selecione uma categoria antes de criar o orçamento.", "danger");
+            return;
+        }
 
         const formData = new FormData(e.currentTarget);
         const valor = Number(formData.get("valor"));
 
-        if (valor <= 0) return;
+        if (valor <= 0) {
+            showToast("Informe um valor válido para o orçamento.", "danger");
+            return;
+        }
 
         adicionarOrcamento(selectedCategoria, valor);
+        showToast("Orçamento criado com sucesso!", "success");
 
         e.currentTarget.reset();
         setSelectedCategoria("")
@@ -56,7 +70,7 @@ export default function Orcamento() {
         return selectedCategoria;
     };
 
-    const handleEdit  = (e: React.FormEvent<HTMLFormElement>, id: number) => {
+    const handleEdit = (e: React.FormEvent<HTMLFormElement>, id: number) => {
         e.preventDefault();
 
         if (!selectedCategoria) return;
@@ -68,11 +82,12 @@ export default function Orcamento() {
         if (valor <= 0) return;
 
         editarOrcamento(id, categoria, valor);
+        showToast("Orçamento editado com sucesso!", "success");
 
         setEditandoOrcamentoId(null);
+        e.currentTarget.reset();
         setSelectedCategoria("");
         setValorInput("");
-        e.currentTarget.reset();
 
     }
 
@@ -118,7 +133,7 @@ export default function Orcamento() {
             <div className={styles.cardAddOrcamento}>
                 <h4>Novo Orçamento</h4>
                 <form className="d-flex justify-content-between" onSubmit={(e) => {
-                    if (editandoOrcamentoId  !== null) {
+                    if (editandoOrcamentoId !== null) {
                         handleEdit(e, editandoOrcamentoId);
                     } else {
                         handleSubmit(e);
@@ -134,13 +149,13 @@ export default function Orcamento() {
                         </div>
                         <div className={styles.inputValor}>
                             <label htmlFor="valor">Valor do Orçamento</label>
-                            <input type="number" name="valor" placeholder="Insira um valor" value={valorInput} onChange={(e) => setValorInput(Number(e.target.value))}/>
+                            <input type="number" name="valor" placeholder="Insira um valor" value={valorInput} onChange={(e) => setValorInput(Number(e.target.value))} />
                         </div>
-                    </div>
-                    <div className={styles.inputButton}>
-                        <button type="submit" className="btn btn-primary">
-                            {editandoOrcamentoId !== null ? "+ Salvar" : "+ Criar"}
-                        </button>
+                        <div className={styles.inputButton}>
+                            <button type="submit" className={`btn ${editandoOrcamentoId ? "btn-success" : "btn-primary"}`}>
+                                {editandoOrcamentoId !== null ? "+ Salvar" : "+ Criar"}
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -153,7 +168,7 @@ export default function Orcamento() {
                             <div className={styles.headerOrcamento}>
                                 <h5>{orcamento.categoria}</h5>
                                 <div className={styles.iconsOrcamento}>
-                                    <i className="bi bi-pencil iconPencil" onClick={() => {setSelectedCategoria(orcamento.categoria); setValorInput(orcamento.valor); setEditandoOrcamentoId(orcamento.id)}}></i>
+                                    <i className="bi bi-pencil iconPencil" onClick={() => { setSelectedCategoria(orcamento.categoria); setValorInput(orcamento.valor); setEditandoOrcamentoId(orcamento.id) }}></i>
                                     <i className="bi bi-trash iconTrash" onClick={() => removerOrcamento(orcamento.id)}></i>
                                 </div>
                             </div>

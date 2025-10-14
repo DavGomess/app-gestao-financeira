@@ -22,7 +22,7 @@ export default function MenuLateral( ) {
                         width={50}
                         height={50}>
                     </Image>}
-                    {!isCollapsed &&  <p className="p-0 m-0">meuSaldo</p>}
+                    {!isCollapsed &&  <p className="titleApp">meuSaldo</p>}
                     <div className="menuIcon">
                         <i className={`bi ${isCollapsed ? "bi-chevron-right menuIconStrongRight" : "bi-chevron-left menuIconStrongleft"} `} onClick={recolherMenu}></i>
                     </div>

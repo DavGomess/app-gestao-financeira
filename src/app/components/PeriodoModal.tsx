@@ -45,8 +45,8 @@ export default function PeriodoModal({ onClose, onSelect }: PeriodoModalProps) {
             role="dialog"
             style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
         >
-            <div className="modal-dialog modal-dialog-centered" role="document">
-                <div className="modal-content">
+            <div className="modal-dialog modal-dialog-centered " role="document">
+                <div className="modal-content ">
                     <div className="modal-header">
                         <h4 className="modal-title">Período</h4>
                         <button type="button" className="btn-close" onClick={onClose}></button>
@@ -84,7 +84,7 @@ export default function PeriodoModal({ onClose, onSelect }: PeriodoModalProps) {
                                     dateFormat="dd/MM/yyyy"
                                     maxDate={new Date()}
                                 />
-                                <i className="bi bi-calendar-week fs-4 me-1 ms-1"></i>
+                                <i className="bi bi-calendar-week fs-4"></i>
                                 </div>
                                 
                                 <div className={styles.containerDate}>
@@ -108,7 +108,7 @@ export default function PeriodoModal({ onClose, onSelect }: PeriodoModalProps) {
                                     dateFormat="dd/MM/yyyy"
                                     maxDate={new Date()}
                                 />
-                                <i className="bi bi-calendar-week fs-4 me-1 ms-1"></i>
+                                <i className="bi bi-calendar-week fs-4"></i>
                                 </div>
                             </div>
                         </div>

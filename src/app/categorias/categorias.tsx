@@ -36,11 +36,24 @@ export default function Categorias() {
                 <form onSubmit={handleAdd}>
                     <div className={styles.infoAddCategorias}>
                         <input type="text" placeholder="Insira o nome" name="nome" required />
-                        <select className="form-select w-25 h-25" defaultValue="" name="tipo" required>
+                        <div className={styles.infoTipoCategorias}>
+                        <select className="form-select" defaultValue="" name="tipo" required>
                             <option value="" disabled>Selecione a Categoria</option>
                             <option value="receita">Receita</option>
                             <option value="despesa">Despesa</option>
                         </select>
+                        <i
+                                    className="bi bi-chevron-down"
+                                    style={{
+                                        position: "absolute",
+                                        right: "0.75rem",
+                                        top: "50%",
+                                        transform: "translateY(-50%)",
+                                        pointerEvents: "none",
+                                        color: "var(--icon-color",
+                                    }}
+                                ></i>
+                        </div>
                         <button className={styles.buttonAdd} type="submit">+ Adicionar</button>
                     </div>
                 </form>
