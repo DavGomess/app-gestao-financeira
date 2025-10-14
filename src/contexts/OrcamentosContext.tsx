@@ -3,11 +3,11 @@
 import { Orcamento } from "@/types/CriarContaInput";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 
-interface  OrcamentosContextType {
+interface OrcamentosContextType {
     orcamentos: Orcamento[];
     adicionarOrcamento: (categoria: string, valor: number) => void;
     removerOrcamento: (id: number) => void;
-    editarOrcamento: (id: number,categoria: string, valor: number) => void
+    editarOrcamento: (id: number, categoria: string, valor: number) => void
 }
 
 const OrcamentosContext = createContext<OrcamentosContextType | undefined>(undefined);
@@ -36,14 +36,14 @@ export function OrcamentosProvider({ children }: { children: ReactNode }) {
             categoria,
             valor
         }
-        setOrcamentos((prev) => [...prev, novo]);
+        setOrcamentos([novo]);
     };
 
     const removerOrcamento = (id: number) => {
         setOrcamentos((prev) => prev.filter((o) => o.id !== id));
     };
 
-    const editarOrcamento = (id: number,categoria: string, valor: number) => {
+    const editarOrcamento = (id: number, categoria: string, valor: number) => {
         setOrcamentos((prev) => prev.map((o) => o.id === id ? { ...o, categoria, valor } : o))
     };
 
@@ -54,12 +54,12 @@ export function OrcamentosProvider({ children }: { children: ReactNode }) {
             {children}
         </OrcamentosContext.Provider>
     );
-}     
+}
 
 export function useOrcamentos() {
     const context = useContext(OrcamentosContext);
     if (!context) {
         throw new Error("useOrcamentos deve ser usado dentro de OrcamentosProvider");
     }
-    return context; 
+    return context;
 }
