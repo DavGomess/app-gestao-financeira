@@ -8,6 +8,7 @@ interface MetasContextType {
     adicionarMeta: (meta: Omit<Meta, "id">) => void;
     removerMeta: (id: number) => void;
     adicionarValorMeta: (id: number, valor: number) => void;
+    editarMeta: (meta: Meta) => void;
 }
 
 const MetasContext = createContext<MetasContextType | undefined>(undefined);
@@ -41,6 +42,12 @@ export function MetasProvider({ children }: { children: ReactNode }) {
         setMetas((prev) => prev.filter((m) => m.id !== id));
     };
 
+    const editarMeta = (metaEditada: Meta) => {
+        setMetas((prev) => 
+            prev.map((m) => m.id === metaEditada.id ? {...m, ...metaEditada} : m)
+        );
+    };
+
     const adicionarValorMeta = (id: number, valor: number) => {
         setMetas((prev) => 
         prev.map((m) => m.id === id ? {...m, valorAtual: m.valorAtual + valor } : m)
@@ -48,7 +55,7 @@ export function MetasProvider({ children }: { children: ReactNode }) {
     }
 
     return(
-        <MetasContext.Provider value={{ metas, adicionarMeta, removerMeta, adicionarValorMeta }}>
+        <MetasContext.Provider value={{ metas, adicionarMeta, removerMeta, adicionarValorMeta, editarMeta }}>
             {children}
         </MetasContext.Provider>
     );
