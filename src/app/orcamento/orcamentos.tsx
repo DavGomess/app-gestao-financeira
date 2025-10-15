@@ -7,6 +7,8 @@ import { useTransacoes } from "@/contexts/TransacoesContext";
 import { useOrcamentos } from "@/contexts/OrcamentosContext";
 import { useToast } from "@/contexts/ToastContext";
 import { useState } from "react";
+import { useDisplayPreferences } from '@/contexts/DisplayPreferencesContext';
+import { formatarValor } from "@/utils/formatarValor";
 
 
 export default function Orcamento() {
@@ -14,6 +16,7 @@ export default function Orcamento() {
     const { transacoes } = useTransacoes();
     const { orcamentos, adicionarOrcamento, removerOrcamento, editarOrcamento } = useOrcamentos();
     const { showToast } = useToast();
+    const {exibirAbreviado } = useDisplayPreferences();
 
     const [selectedCategoria, setSelectedCategoria] = useState<string>("");
     const [openModal, setOpenModal] = useState<null | 'categoria'>(null);
@@ -118,15 +121,15 @@ export default function Orcamento() {
                 <div className={styles.containerInfoValores}>
                     <div className={styles.cardInfoValor}>
                         <h5>Total Orçado</h5>
-                        <p className="fs-5">R$ {orcamentos.reduce((acc, o) => acc + o.valor, 0).toFixed(2)}</p>
+                        <p className="fs-5">{formatarValor(totalOrcado, exibirAbreviado)}</p>
                     </div>
                     <div className={styles.cardInfoValor}>
                         <h5>Total Gasto</h5>
-                        <p className="fs-5 text-danger">R$ {totalGasto.toFixed(2)}</p>
+                        <p className="fs-5 text-danger">{formatarValor(totalGasto, exibirAbreviado)}</p>
                     </div>
                     <div className={styles.cardInfoValor}>
                         <h5>Saldo Restante</h5>
-                        <p className="fs-5 text-success">R$ {saldoRestante.toFixed(2)}</p>
+                        <p className="fs-5 text-success">R$ {formatarValor(saldoRestante, exibirAbreviado)}</p>
                     </div>
                 </div>
             </div>
@@ -187,17 +190,17 @@ export default function Orcamento() {
 
                                 <div className={styles.infoGasto}>
                                     <h6>Gasto:</h6>
-                                    <p className="text-danger">R$ {gasto.toFixed(2)}</p>
+                                    <p className="text-danger">{formatarValor(gasto, exibirAbreviado)}</p>
                                 </div>
 
                                 <div className={styles.infoOrcamento}>
                                     <h6>Orçamento:</h6>
-                                    <p>R$ {orcamento.valor.toFixed(2)}</p>
+                                    <p>{formatarValor(orcamento.valor, exibirAbreviado)}</p>
                                 </div>
 
                                 <div className={styles.infoRestante}>
                                     <h6>Restante:</h6>
-                                    <p className="text-success">R$ {restante.toFixed(2)}</p>
+                                    <p className="text-success">{formatarValor(restante, exibirAbreviado)}</p>
                                 </div>
 
                                 {gasto > orcamento.valor && (

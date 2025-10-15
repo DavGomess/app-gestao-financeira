@@ -3,6 +3,8 @@ import styles from './dashboard.module.css'
 import { categorias as categoriasFixas } from "../data/categorias";
 import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useCategorias } from '@/contexts/CategoriaContext';
+import { useDisplayPreferences } from '@/contexts/DisplayPreferencesContext';
+import { formatarValor } from "@/utils/formatarValor";
 
 type PayloadItem = {
     payload: {
@@ -51,6 +53,8 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload }) => {
 export default function Dashboard() {
     const { transacoes } = useTransacoes();
     const { categorias } = useCategorias();
+    const {exibirAbreviado } = useDisplayPreferences();
+    
     const COLORS = [
         "#e0d041ff", "#f19797ff", "#75d88eff", "#d97706", "#6b21a8", "#065f46", "#cf16b0ff", "#1e3a8a", "#a00606ff", "#4338ca", "#0ec5c5ff", "#b45309", "#45b619ff", "#cf135eff", "#0c4a6e", "#4b5563", "#8c68cfff", "#5900ffd7", "#a33d78ff", "#3d86a3ff"
     ];
@@ -97,15 +101,15 @@ export default function Dashboard() {
             <div className={styles.containerInfoValores}>
                 <div className={styles.infoValoresReceitas}>
                     <h5 className="m-0">Receitas</h5>
-                    <p className='m-0'>{totalReceitas.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>
+                    <p className='m-0'>{formatarValor(totalReceitas, exibirAbreviado)}</p>
                 </div>
                 <div className={styles.infoValoresSaldo}>
                     <h5 className="m-0">Saldo</h5>
-                    <p className='m-0'>{saldoFinal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>
+                    <p className='m-0'>{formatarValor(saldoFinal, exibirAbreviado)}</p>
                 </div>
                 <div className={styles.infoValoresDespesas}>
                     <h5 className="m-0">Despesas</h5>
-                    <p className='m-0'>R$ {totalDespesas.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>
+                    <p className='m-0'>R$ {formatarValor(totalDespesas, exibirAbreviado)}</p>
                 </div>
             </div>
             <div className={styles.containerGraficos}>

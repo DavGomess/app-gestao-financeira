@@ -1,4 +1,4 @@
-import { useState } from "react";
+    import { useState } from "react";
 import styles from "./transacoes.module.css";
 import CategoriaModal from "../components/CategoriaModal";
 import PeriodoModal from "../components/PeriodoModal";
@@ -6,6 +6,8 @@ import { PeriodoSelecionado } from "@/types/CriarContaInput";
 import { categorias as categoriasFixas } from "../data/categorias";
 import { useCategorias } from "@/contexts/CategoriaContext";
 import { useTransacoes } from "@/contexts/TransacoesContext";
+import { useDisplayPreferences } from '@/contexts/DisplayPreferencesContext';
+import { formatarValor } from "@/utils/formatarValor";
 
 
 
@@ -16,6 +18,7 @@ export default function Transacoes() {
     const [selectedCategoria, setSelectedCategoria] = useState<string[]>([]);
     const [selectedPeriodo, setSelectedPeriodo] = useState<PeriodoSelecionado | null>(null);
     const [pesquisa, setPesquisa] = useState("");
+    const {exibirAbreviado } = useDisplayPreferences();
 
 
     const transacoesFiltradas = transacoes.filter((t) => {
@@ -142,9 +145,9 @@ export default function Transacoes() {
                                     <div className={styles.ladoDireitoTransacao}>
                                         <div className={styles.valorTransacao}>
                                             {categoriasCombinadas.Despesa.includes(conta.categoria) ? (
-                                                <h5 className={styles.vermelhoTextoValor}>-R$ {conta.valor}</h5>
+                                                <h5 className={styles.vermelhoTextoValor}>- {formatarValor(conta.valor, exibirAbreviado)}</h5>
                                             ) : (
-                                                <h5 className={styles.verdeTextoValor}>+R$ {conta.valor}</h5>
+                                                <h5 className={styles.verdeTextoValor}>+ {formatarValor(conta.valor, exibirAbreviado)}</h5>
                                             )}
                                         </div>
                                     </div>

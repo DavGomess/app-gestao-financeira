@@ -33,6 +33,7 @@
     align-items: center;
     width: 20rem;
     border: 0.5px solid var(--card-border);
+    background-color: var(--input-bg);
     border-radius: 0.5rem;
     padding-top: 0.5rem;
     
