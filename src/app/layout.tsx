@@ -8,6 +8,9 @@ import { CategoriaProvider } from "@/contexts/CategoriaContext";
 import { TransacoesProvider } from "@/contexts/TransacoesContext";
 import { OrcamentosProvider } from "@/contexts/OrcamentosContext";
 import { MetasProvider } from "@/contexts/MetasContext";
+import { ToastProvider } from "@/contexts/ToastContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import { DisplayPreferencesProvider } from "@/contexts/DisplayPreferencesContext";
 
 
 const poppins = Poppins({
@@ -35,15 +38,21 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${poppins.variable} ${geistMono.variable}`}>
         <SelectedProvider>
-          <CategoriaProvider>
-            <TransacoesProvider>
-              <OrcamentosProvider>
-                <MetasProvider>
-                {children}
-                </MetasProvider>
-              </OrcamentosProvider>
-            </TransacoesProvider>
-          </CategoriaProvider>
+          <ToastProvider>
+            <ThemeProvider>
+              <DisplayPreferencesProvider>
+                <CategoriaProvider>
+                  <TransacoesProvider>
+                    <OrcamentosProvider>
+                      <MetasProvider>
+                        {children}
+                      </MetasProvider>
+                    </OrcamentosProvider>
+                  </TransacoesProvider>
+                </CategoriaProvider>
+              </DisplayPreferencesProvider>
+            </ThemeProvider>
+          </ToastProvider>
         </SelectedProvider>
       </body>
     </html>
