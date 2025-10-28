@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import styles from "./contasPagar.module.css"
-import { ContaLocal } from "../../types/CriarContaInput";
+import { ContaLocal } from "../../types";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { definirStatus } from "@/utils/status";
+import { definirStatus, StatusConta } from "../../utils/status";
 import { categorias as categoriasFixas } from "../data/categorias";
-import { getTipo } from "@/utils/getTipo";
-import { useCategorias } from "@/contexts/CategoriaContext";
+import { useCategorias } from "../../contexts/CategoriaContext";
 import CategoriaModal from "../components/CategoriaModal";
-import { useTransacoes } from "@/contexts/TransacoesContext";
-import { useToast } from "@/contexts/ToastContext";
+import { useTransacoes } from "../../contexts/TransacoesContext";
+import { useToast } from "../../contexts/ToastContext";
+import { ContaFromAPI } from "../../types";
 
 export default function ContasPagar() {
     const { categorias } = useCategorias();
@@ -21,12 +21,38 @@ export default function ContasPagar() {
     const [novaData, setNovaData] = useState<Date | null>(null);
     const [selectedCategoria, setSelectedCategoria] = useState<string>("");
     const [openModal, setOpenModal] = useState<null | 'categoria'>(null);
+    const [selectedCategoriaId, setSelectedCategoriaId] = useState<number | null>(null);
+    const [editCategoriaId, setEditCategoriaId] = useState<number | null>(null);
 
     const handleOpenCategoriaModal = () => setOpenModal('categoria');
     const handleCloseModal = () => setOpenModal(null);
 
-    const handleSelectCategoria = (categorias: string[]) => {
-        setSelectedCategoria(categorias[0] || "");
+    const handleSelectCategoria = (categoriasSelecionadas: string[]) => {
+        const nomeCategoria = categoriasSelecionadas[0];
+        if (!nomeCategoria) {
+            handleCloseModal();
+            return;
+        }
+
+        const categoria = categorias.find(c => c.nome === nomeCategoria);
+        if (!categoria) {
+            showToast("Categoria não encontrada", "danger");
+            handleCloseModal();
+            return;
+        }
+
+        if (isEditing && selectedConta) {
+            setSelectedConta({
+                ...selectedConta,
+                categoria: nomeCategoria,
+                categoriaId: categoria.id,
+            });
+            setEditCategoriaId(categoria.id);
+        } else {
+            setSelectedCategoriaId(categoria.id);
+            setSelectedCategoria(nomeCategoria);
+        }
+
         handleCloseModal();
     };
 
@@ -53,77 +79,129 @@ export default function ContasPagar() {
         }
 
         const carregarBanco = async () => {
-            const res = await fetch("http://localhost:4000/contasPagar");
+            const token = localStorage.getItem("token");
+            const res = await fetch("http://localhost:4000/contasPagar", {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
             if (res.ok) {
-                const contasBanco = await res.json();
-                setContas(contasBanco);
-                localStorage.setItem("contas", JSON.stringify(contasBanco))
+                const contasBanco: ContaFromAPI[] = await res.json();
+
+                const isStatusValid = (s: string): s is StatusConta =>
+                    s === "pendente" || s === "paga" || s === "vencida";
+
+                const contasFormatadas: ContaLocal[] = contasBanco.map((c) => {
+                    if (!isStatusValid(c.status)) {
+                        throw new Error(`Status inválido: ${c.status}`);
+                    }
+
+                    return {
+                        id: c.id,
+                        nome: c.nome,
+                        valor: c.valor,
+                        data: c.data,
+                        status: c.status,
+                        statusAnterior: c.statusAnterior as StatusConta | undefined,
+                        categoria: c.categoria?.nome || "Sem categoria",
+                        categoriaId: c.categoriaId,
+                    };
+                });
+
+                setContas(contasFormatadas);
+                localStorage.setItem("contas", JSON.stringify(contasFormatadas));
             }
-        }
+        };
         carregarBanco();
     }, []);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const form = e.currentTarget;
-
         const formData = new FormData(form);
         const dataConta = novaData ? novaData.toISOString() : "";
+
+        if (!selectedCategoriaId) {
+            showToast("Selecione uma categoria", "danger");
+            return;
+        }
+
         const conta = {
-            id: Date.now(),
-            nome: formData.get("nome"),
+            nome: formData.get("nome") as string,
             valor: Number(formData.get("valor")),
-            categoria: selectedCategoria,
+            categoriaId: selectedCategoriaId,
             data: dataConta,
-            status: definirStatus(dataConta)
         };
+
+        const token = localStorage.getItem("token");
+        if (!token) {
+            showToast("Token não encontrado", "danger");
+            return;
+        }
+
         const res = await fetch("http://localhost:4000/contasPagar", {
             method: "POST",
             body: JSON.stringify(conta),
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            },
         });
 
         if (res.ok) {
             const contaSalva = await res.json();
-
             const contasAtualizadas = [...contas, contaSalva];
             setContas(contasAtualizadas)
             localStorage.setItem("contas", JSON.stringify(contasAtualizadas));
 
+            const categoriaObj = categorias.find(c => c.id === contaSalva.categoriaId);
             const novaTransacao = {
-                id: Date.now(),
-                contaId: contaSalva.id,
-                nome: contaSalva.nome,
                 valor: contaSalva.valor,
-                categoria: contaSalva.categoria,
+                tipo: categoriaObj?.tipo || "despesa",
                 data: contaSalva.data,
                 status: contaSalva.status,
-                tipo: getTipo(contaSalva.categoria)
+                categoriaId: contaSalva.categoriaId,
+                userId: contaSalva.userId
             };
 
+            const transacaoRes = await fetch("http://localhost:4000/transacoes", {
+                method: "POST",
+                body: JSON.stringify(novaTransacao),
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (transacaoRes.ok) {
+                const transacaoSalva = await transacaoRes.json();
+                setTransacoes((prev) => {
+                    const atualizadas = [...prev, transacaoSalva];
+                    localStorage.setItem("transacoes", JSON.stringify(atualizadas));
+                    return atualizadas;
+                });
+            }
+
             showToast("Conta criada com sucesso!", "success");
-
-            setTransacoes((prev) => {
-                const atualizadas = [...prev, novaTransacao];
-                localStorage.setItem("transacoes", JSON.stringify(atualizadas));
-                return atualizadas
-            })
-
             form.reset();
             setNovaData(null);
             setSelectedCategoria("");
+        } else {
+            const erro = await res.json();
+            showToast(erro.error || "Erro ao criar conta", "danger");
         }
     };
 
-    const toggleStatus = (conta: ContaLocal) => {
-        let novoStatus = conta.status;
-        let statusAnterior = conta.statusAnterior;
+    const toggleStatus = async (conta: ContaLocal) => {
+        const statusAnterior = conta.status;
+        let novoStatus: "paga" | "pendente" | "vencida" = statusAnterior;
 
-        if (conta.status === "pendente" || conta.status === "vencida") {
-            statusAnterior = conta.status;
+        if (statusAnterior === "pendente" || statusAnterior === "vencida") {
             novoStatus = "paga";
-        } else if (conta.status === "paga") {
-            novoStatus = statusAnterior || "pendente";
+        } else if (statusAnterior === "paga") {
+            novoStatus = conta.statusAnterior || "pendente";
         }
 
         const contasAtualizadas = contas.map(c => c.id === conta.id ? { ...c, status: novoStatus, statusAnterior } : c);
@@ -131,17 +209,40 @@ export default function ContasPagar() {
         setContas(contasAtualizadas);
         localStorage.setItem("contas", JSON.stringify(contasAtualizadas))
 
-        fetch(`http://localhost:4000/contasPagar/${conta.id}`, {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            showToast("Erro: token não encontrado", "danger");
+            return;
+        }
+
+        const res = await fetch(`http://localhost:4000/contasPagar/${conta.id}`, {
             method: "PUT",
-            body: JSON.stringify({ ...conta, status: novoStatus }),
-            headers: { "content-Type": "application/json" },
+            body: JSON.stringify({ status: novoStatus }),
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
         });
+
+        if (res.ok) {
+            showToast(`Conta marcada como ${novoStatus}!`, "success");
+        } else {
+            setContas(contas.map(c => (c.id === conta.id ? { ...c, status: statusAnterior } : c)));
+            localStorage.setItem("contas", JSON.stringify(contas));
+            const erro = await res.json();
+            showToast(erro.error || "Erro ao atualizar status", "danger");
+        }
     };
 
     const deletarConta = async (conta: ContaLocal) => {
 
+        const token = localStorage.getItem("token");
         const res = await fetch(`http://localhost:4000/contasPagar/${conta.id}`, {
-            method: "DELETE"
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
         });
 
         if (res.ok) {
@@ -308,21 +409,23 @@ export default function ContasPagar() {
                                         ))}
                                     {campo === "categoria" &&
                                         (isEditing ? (
-                                            <input
-                                                type="text"
-                                                value={selectedConta.categoria}
-                                                className={styles.inputEditar}
-                                                onChange={(e) =>
-                                                    setSelectedConta({
-                                                        ...selectedConta,
-                                                        categoria: e.target.value,
-                                                    })
-                                                }
-                                            />
+                                            <div className={styles.categoriaEdit}>
+                                                <button
+                                                    type="button"
+                                                    className={styles.categoriaButton}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setOpenModal('categoria');
+                                                    }}
+                                                >
+                                                    {selectedConta.categoria || "Selecionar categoria"}
+                                                    <i className="bi bi-chevron-down"></i>
+                                                </button>
+                                            </div>
                                         ) : (
                                             <>
                                                 <i className="fa-solid fa-tag"></i>
-                                                <p>{selectedConta.categoria}</p>
+                                                <p>{selectedConta.categoria || "Sem categoria"}</p>
                                             </>
                                         ))}
                                     {campo === "valor" &&
@@ -356,19 +459,35 @@ export default function ContasPagar() {
                                             if (!selectedConta) return;
 
                                             const novoStatus = definirStatus(selectedConta.data);
+                                            const categoriaId = editCategoriaId ?? selectedConta.categoriaId;
 
-                                            const contaAtualizada = { ...selectedConta, status: novoStatus }
+                                            const contaAtualizada = {
+                                                ...selectedConta,
+                                                status: novoStatus,
+                                                categoriaId
+                                            }
 
-                                            const updated = contas.map((c) =>
-                                                c.id === contaAtualizada.id ? contaAtualizada : c);
-                                            setContas(updated);
-                                            localStorage.setItem("contas", JSON.stringify(updated));
 
-                                            await fetch(`http://localhost:4000/contasPagar/${selectedConta.id}`, {
+                                            const token = localStorage.getItem("token");
+                                            const res = await fetch(`http://localhost:4000/contasPagar/${selectedConta.id}`, {
                                                 method: "PUT",
                                                 body: JSON.stringify(contaAtualizada),
-                                                headers: { "Content-Type": "application/json" },
+                                                headers: {
+                                                    "Content-Type": "application/json",
+                                                    Authorization: `Bearer ${token}`
+                                                },
                                             })
+
+                                            if (res.ok) {
+                                                const contaDoBanco = await res.json();
+                                                const updated = contas.map(c => (c.id === contaDoBanco.id ? contaDoBanco : c));
+                                                setContas(updated);
+                                                localStorage.setItem("contas", JSON.stringify(updated));
+                                                showToast("Conta editada com sucesso!", "success");
+                                            } else {
+                                                const erro = await res.json();
+                                                showToast(erro.error || "Erro ao salvar", "danger");
+                                            }
 
                                             setIsEditing(false);
                                             setSelectedConta(null);

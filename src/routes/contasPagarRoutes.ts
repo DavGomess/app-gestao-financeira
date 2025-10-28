@@ -1,13 +1,14 @@
 import { Router } from "express";
-import {ContasPagarController} from "../controllers/ContasPagarController.ts"
+import {ContasPagarController} from "../controllers/ContasPagarController"
+import { authenticateToken } from "@/middlewares/authMiddleware";
 
 const router = Router();
-
 const contasPagarController = new ContasPagarController()
 
-router.post("/", (req, res) => contasPagarController.criar(req, res));
-router.get("/", (req, res) => contasPagarController.listar(req, res));
-router.put("/:id", (req, res) => contasPagarController.editar(req, res));
-router.delete("/:id", (req, res) => contasPagarController.deletar(req, res));
+router.use(authenticateToken);
+router.post("/", contasPagarController.criar.bind(contasPagarController));
+router.get("/", contasPagarController.listar.bind(contasPagarController));
+router.put("/:id", contasPagarController.editar.bind(contasPagarController));
+router.delete("/:id", contasPagarController.deletar.bind(contasPagarController));
 
 export default router;

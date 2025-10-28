@@ -1,47 +1,72 @@
 import { Request, Response } from "express";
-import { ContasService } from "../services/ContasPagarService.ts";
-
-const contasService = new ContasService();
+import { ContasService } from "../services/ContasPagarService";
+import { AuthenticatedRequest } from "../middlewares/authMiddleware";
+import { prisma } from "@/lib/prisma";
 
 export class ContasPagarController {
-    constructor() {
-    this.criar = this.criar.bind(this);
-    this.listar = this.listar.bind(this);
-    this.editar = this.editar.bind(this);
-    this.deletar = this.deletar.bind(this);
-}
+    private contasService = new ContasService();
 
-    async criar(req: Request, res: Response) {
+    
+    async criar(req: AuthenticatedRequest, res: Response) {
         try {
-            const { nome, valor, categoria, data } = req.body;
+            const { nome, valor, categoriaId, data } = req.body;
 
-            if (!nome || !valor || !categoria || !data) {
+            if (!nome || !valor || !data) {
             return res.status(400).json({ error: "Todos os campos são obrigatórios" });
         }
 
-        const conta = await contasService.criarContaService({
+            if (valor <= 0) {
+            return res.status(400).json({ error: "Valor deve ser positivo" });
+        }
+
+            const userId = req.user?.id;
+            if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+
+            if (categoriaId) {
+                const categoria = await prisma.categoria.findFirst({
+                    where: { id: categoriaId, userId },
+                });
+            if (!categoria) {
+                return res.status(400).json({ error: "Categoria inválida ou não pertence ao usuário" });
+            }
+    }
+
+        const conta = await this.contasService.criarContaService({
             nome,
             valor: Number(valor),
-            categoria,
+            categoriaId: categoriaId ? Number(categoriaId) : undefined,
             data,
             status: "pendente",
-        });
+        },
+        userId
+    );
 
         return res.status(201).json(conta);
         } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : String(error);
+            const errorMessage = error instanceof Error ? error.message : "Erro ao criar conta";
             return res.status(400).json({ error: errorMessage });
         }
     }
 
-    async listar(req: Request, res: Response) {
-        const contas = await contasService.listarContasService();
-        return res.json(contas)
+    async listar(req: AuthenticatedRequest, res: Response) {
+        try {
+            const userId = req.user?.id;
+            if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+
+            const contas = await this.contasService.listarContasService(userId);
+            return res.json(contas);
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            return res.status(500).json({ error: errorMessage });
+    }
     }
 
-    async editar(req: Request, res: Response) {
+    async editar(req: AuthenticatedRequest, res: Response) {
     try {
-        const conta = await contasService.editarContaService(Number(req.params.id), req.body);
+        const userId = req.user?.id;
+        if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+
+        const conta = await this.contasService.editarContaService(Number(req.params.id), req.body, userId);
         return res.json(conta);
     } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : String(error);
@@ -49,10 +74,12 @@ export class ContasPagarController {
     }
 }
 
-    async deletar(req: Request, res: Response) {
+    async deletar(req: AuthenticatedRequest, res: Response) {
         try {
-            const { id } = req.params;
-            await contasService.deleteContaService(Number(id));
+            const userId = req.user?.id;
+            if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+
+            await this.contasService.deleteContaService(Number(req.params.id), userId);
             return res.status(204).send();
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : String(error);

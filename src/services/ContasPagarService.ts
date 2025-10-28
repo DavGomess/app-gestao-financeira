@@ -1,32 +1,42 @@
-import * as ContasPagarRepository from "../repository/ContasPagarRepository.ts";
-import { definirStatus } from "../utils/status.ts";
-import { CriarContaInput } from  "../types/CriarContaInput.ts"
+import { criarConta, listarConta, editarConta, deleteConta } from "../repository/ContasPagarRepository";
+import { definirStatus } from "../utils/status";
+import { CriarContaInput } from  "../types"
 
 
 export class ContasService {
-    async criarContaService(dados: CriarContaInput) {
-        if (dados.valor <= 0) {
-            throw new Error("O valor da conta deve ser maior que zero")
-        }
-
+    async criarContaService(dados: CriarContaInput, userId: number) {
         const status = definirStatus(dados.data);
+        return criarConta(
+            {
+                ...dados,
+                status,
+                categoriaId: dados.categoriaId,
+            },
+            userId
+        );
+}
 
-        return ContasPagarRepository.criarConta({ ...dados, status });
+    async listarContasService(userId: number) {
+        return listarConta(userId);
     };
 
-    async listarContasService() {
-        return ContasPagarRepository.listarConta();
-    };
-
-    async editarContaService(id: number, dados: Partial<CriarContaInput>) {
-        if (dados.valor !== undefined && dados.valor <= 0) {
-            throw new Error("O valor deve ser maior que zero");
-        }
-        return ContasPagarRepository.editarConta(id, dados);
+    async editarContaService(id: number, dados: Partial<CriarContaInput>, userId: number) {
+        if (dados.valor && dados.valor <= 0) {
+        throw new Error("O valor deve ser positivo");
     }
+    const result = await editarConta(id, dados, userId);
+    if (result === null) {
+        throw new Error("Conta não encontrada ou sem permissão para editar");
+    }
+    return result;
+}
 
-    async deleteContaService(id: number) {
-        return ContasPagarRepository.deleteConta(id);
+    async deleteContaService(id: number, userId: number) {
+        const result = await deleteConta(id, userId);
+    if (result.count === 0) {
+        throw new Error("Conta não encontrada ou sem permissão para deletar");
+    }
+        return { success: true };
     }
 }
 
