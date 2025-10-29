@@ -1,35 +1,81 @@
-    import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "./transacoes.module.css";
 import CategoriaModal from "../components/CategoriaModal";
 import PeriodoModal from "../components/PeriodoModal";
-import { PeriodoSelecionado } from "@/types/CriarContaInput";
+import { PeriodoSelecionado, TransacaoLocal } from "../../types";
 import { categorias as categoriasFixas } from "../data/categorias";
-import { useCategorias } from "@/contexts/CategoriaContext";
-import { useTransacoes } from "@/contexts/TransacoesContext";
-import { useDisplayPreferences } from '@/contexts/DisplayPreferencesContext';
-import { formatarValor } from "@/utils/formatarValor";
-
+import { useCategorias } from "../../contexts/CategoriaContext";
+import { useTransacoes } from "../../contexts/TransacoesContext";
+import { useDisplayPreferences } from '../../contexts/DisplayPreferencesContext';
+import { formatarValor } from "../../utils/formatarValor";
+import { useToast } from "../../contexts/ToastContext";
 
 
 export default function Transacoes() {
     const { categorias } = useCategorias();
-    const { transacoes } = useTransacoes();
+    const { transacoes, setTransacoes } = useTransacoes();
+    const { showToast } = useToast();
     const [openModal, setOpenModal] = useState<null | "categoria" | "periodo">(null);
     const [selectedCategoria, setSelectedCategoria] = useState<string[]>([]);
     const [selectedPeriodo, setSelectedPeriodo] = useState<PeriodoSelecionado | null>(null);
     const [pesquisa, setPesquisa] = useState("");
-    const {exibirAbreviado } = useDisplayPreferences();
+    const { exibirAbreviado } = useDisplayPreferences();
 
+
+    useEffect(() => {
+        const carregarTodas = async () => {
+            const token = localStorage.getItem("token");
+            if (!token) return;
+
+            try {
+                const res = await fetch("http://localhost:4000/transacoes", {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                if (res.ok) {
+                    const data: TransacaoLocal[] = await res.json();
+                    setTransacoes(data);
+                    localStorage.setItem("transacoes", JSON.stringify(data));
+                }
+            } catch {
+                showToast("Erro ao carregar transações", "danger");
+            }
+        };
+        carregarTodas();
+    }, [setTransacoes, showToast]);
+
+    useEffect(() => {
+        if (!pesquisa) return;
+
+        setSelectedCategoria([]);
+        setSelectedPeriodo(null);
+
+        const timer = setTimeout(async () => {
+            const token = localStorage.getItem("token");
+            if (!token) return;
+
+            try {
+                const res = await fetch(
+                    `http://localhost:4000/transacoes/filtrar?termo=${encodeURIComponent(pesquisa)}`,
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                if (res.ok) {
+                    const data: TransacaoLocal[] = await res.json();
+                    setTransacoes(data);
+                }
+            } catch {
+                showToast("Erro na pesquisa", "danger");
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [pesquisa, setTransacoes, showToast]);
 
     const transacoesFiltradas = transacoes.filter((t) => {
-        const matchPesquisa = pesquisa === "" || t.nome.toLowerCase().includes(pesquisa.toLowerCase());
-
         const matchCategoria = selectedCategoria.length === 0 || selectedCategoria.includes(t.categoria);
 
         let matchPeriodo = true;
         if (selectedPeriodo) {
             const dataTransacao = new Date(t.data);
-
             if (selectedPeriodo.tipo === "predefinido" && selectedPeriodo.dias) {
                 const limite = new Date();
                 limite.setDate(limite.getDate() - selectedPeriodo.dias);
@@ -39,7 +85,7 @@ export default function Transacoes() {
             }
         }
 
-        return matchPesquisa && matchCategoria && matchPeriodo;
+        return matchCategoria && matchPeriodo;
     });
 
     const handleOpenCategoriaModal = () => setOpenModal("categoria");
@@ -80,41 +126,41 @@ export default function Transacoes() {
         <div className={styles.main}>
             <div className={styles.cardFiltro}>
                 <div className={styles.containerFiltro}>
-                <h2><i className="bi bi-funnel"></i> Filtros</h2>
-                <form>
-                    <div className={styles.groupInputs}>
-                        <div className={styles.inputPesquisar}>
-                            <label htmlFor="pesquisar"></label>
-                            <i className="bi bi-search"></i>
-                            <input
-                                type="text"
-                                id="pesquisar"
-                                name="pesquisar"
-                                placeholder="Pesquisar"
-                                value={pesquisa}
-                                onChange={(e) => setPesquisa(e.target.value)}
-                            />
+                    <h2><i className="bi bi-funnel"></i> Filtros</h2>
+                    <form>
+                        <div className={styles.groupInputs}>
+                            <div className={styles.inputPesquisar}>
+                                <label htmlFor="pesquisar"></label>
+                                <i className="bi bi-search"></i>
+                                <input
+                                    type="text"
+                                    id="pesquisar"
+                                    name="pesquisar"
+                                    placeholder="Pesquisar"
+                                    value={pesquisa}
+                                    onChange={(e) => setPesquisa(e.target.value)}
+                                />
+                            </div>
+                            <div className={styles.inputPeriodo}>
+                                <label htmlFor="periodo"></label>
+                                <button type="button" onClick={handleOpenPeriodoModal}>
+                                    {selectedPeriodo
+                                        ? selectedPeriodo.tipo === "predefinido"
+                                            ? `Últimos ${selectedPeriodo.dias} dias`
+                                            : `${selectedPeriodo.inicio?.toLocaleDateString("pt-BR")} - ${selectedPeriodo.fim?.toLocaleDateString("pt-BR")}`
+                                        : "Periodo"}
+                                    <i className="bi bi-chevron-down"></i>
+                                </button>
+                            </div>
+                            <div className={styles.inputCategoria}>
+                                <label htmlFor="categoria"></label>
+                                <button type="button" onClick={handleOpenCategoriaModal}>
+                                    {displayCategorias()}
+                                    <i className="bi bi-chevron-down"></i>
+                                </button>
+                            </div>
                         </div>
-                        <div className={styles.inputPeriodo}>
-                            <label htmlFor="periodo"></label>
-                            <button type="button" onClick={handleOpenPeriodoModal}>
-                                {selectedPeriodo
-                                    ? selectedPeriodo.tipo === "predefinido"
-                                        ? `Últimos ${selectedPeriodo.dias} dias`
-                                        : `${selectedPeriodo.inicio?.toLocaleDateString("pt-BR")} - ${selectedPeriodo.fim?.toLocaleDateString("pt-BR")}`
-                                    : "Periodo"}
-                                <i className="bi bi-chevron-down"></i>
-                            </button>
-                        </div>
-                        <div className={styles.inputCategoria}>
-                            <label htmlFor="categoria"></label>
-                            <button type="button" onClick={handleOpenCategoriaModal}>
-                                {displayCategorias()}
-                                <i className="bi bi-chevron-down"></i>
-                            </button>
-                        </div>
-                    </div>
-                </form>
+                    </form>
                 </div>
             </div>
             <div className={styles.cardTransacoes}>
@@ -135,8 +181,8 @@ export default function Transacoes() {
                                             )}
                                         </div>
                                         <div className={styles.textosTransacao}>
-                                            <h6>{conta.nome}</h6>
-                                            <p>{conta.categoria}</p>
+                                            <h6>{conta.contaNome}</h6>
+                                            <p>{conta.categoria} • {conta.status}</p>
                                         </div>
                                         <div className={styles.dataTransacao}>
                                             <span>{new Date(conta.data).toLocaleDateString("pt-BR")}</span>

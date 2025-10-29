@@ -1,45 +1,29 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
-import { Transacao } from "@/types/CriarContaInput";
+import { createContext, useContext, useState, ReactNode } from "react";
+import { TransacaoLocal } from "../types";
 
 interface TransacoesContextType {
-    transacoes: Transacao[];
-    setTransacoes: React.Dispatch<React.SetStateAction<Transacao[]>>;
+    transacoes: TransacaoLocal[];
+    setTransacoes: React.Dispatch<React.SetStateAction<TransacaoLocal[]>>;
 }
 
 const TransacoesContext = createContext<TransacoesContextType | undefined>(undefined);
 
-export const TransacoesProvider = ({ children }: { children: React.ReactNode }) => {
-    const [transacoes, setTransacoes] = useState<Transacao[]>([]);
-
-    useEffect(() => {
-        const fetchTransacoes = async () => {
-            try {
-                const res = await fetch("http://localhost:4000/transacoes");
-                if (!res.ok) throw new Error("Erro ao buscar transações");
-                const data: Transacao[] = await res.json();
-                setTransacoes(data);
-            } catch (error) {
-                console.error(error);
-            }
-        };
-
-        fetchTransacoes();
-    }, []);
-
+export const TransacoesProvider = ({ children }: { children: ReactNode }) => {
+    const [transacoes, setTransacoes] = useState<TransacaoLocal[]>([]);
 
     return (
-        <TransacoesContext.Provider value={{ transacoes, setTransacoes }}>
-            {children}
-        </TransacoesContext.Provider>
+    <TransacoesContext.Provider value={{ transacoes, setTransacoes }}>
+        {children}
+    </TransacoesContext.Provider>
     );
-}
+};
 
 export function useTransacoes() {
     const context = useContext(TransacoesContext);
     if (!context) {
-        throw new Error("useTransacoes deve ser usado dentro de TransacoesProvider");
+    throw new Error("useTransacoes deve ser usado dentro de TransacoesProvider");
     }
     return context;
 }
