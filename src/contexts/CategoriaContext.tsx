@@ -1,74 +1,63 @@
 "use client";
-import { Categoria } from "../types/CriarContaInput.ts"
-import { createContext, useContext, useEffect, useState } from "react";
+
+import { CategoriaLocal } from "../types"
+import { createContext, useContext, ReactNode, useState } from "react";
 
 
-type CategoriaContextType = {
-    categorias: Categoria[];
-    addCategoria: (categoria: Omit<Categoria, "id">) => Promise<void>;
-    deletarCategoria: (categoria: Categoria) => Promise<void>;
+interface CategoriaContextType {
+    categorias: CategoriaLocal[];
+    addCategoria: (nome: string, tipo: "receita" | "despesa") => Promise<void>;
+    deletarCategoria: (id: number) => Promise<void>;
 };
 
 const CategoriaContext = createContext<CategoriaContextType | undefined>(undefined);
 
-export const CategoriaProvider = ({ children }: { children: React.ReactNode }) => {
-    const [categorias, setCategorias] = useState<Categoria[]>([]);
+export const CategoriaProvider = ({ children }: { children: ReactNode }) => {
+    const [categorias, setCategorias] = useState<CategoriaLocal[]>([]);
 
-    useEffect(() => {
-        const saved = localStorage.getItem("categorias");
-        if (saved) {
-            try {
-                setCategorias(JSON.parse(saved));
-                return;
-            } catch (error) {
-                console.error("Error ao carregar categorias do localStorage", error)
+    const carregar = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        try {
+            const res = await fetch("http://localhost:4000/categorias", {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setCategorias(data.receita.concat(data.despesa));
             }
-        }
+        } catch {}
+    }
 
-        const fetchCategorias = async () => {
-            try {
-                const res = await fetch("http://localhost:4000/categorias");
-                if (!res.ok) throw new Error("Erro ao buscar categorias");
-                const data: Categoria[] = await res.json();
-                setCategorias(data);
-            } catch (err) {
-                console.error("Erro ao carregar categorias:", err);
-            }
-        };
-        fetchCategorias();
-    }, []);
 
-    useEffect(() => {
-        localStorage.setItem("categorias", JSON.stringify(categorias))
-    }, [categorias])
-
-    const addCategoria = async (categoria: Omit<Categoria, "id">) => {
+    const addCategoria = async (nome: string, tipo: "receita" | "despesa") => {
+        const token = localStorage.getItem("token");
+        if (!token) return;
         try {
             const res = await fetch("http://localhost:4000/categorias", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(categoria),
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, 
+                body: JSON.stringify({ nome, tipo }),
             });
 
-            if (!res.ok) throw new Error("Erro ao criar categoria");
-            const nova: Categoria = await res.json();
-            setCategorias((prev) => [...prev, nova]);
-        } catch (err) {
-            console.error("Erro ao adicionar categoria:", err);
-        }
-    };
-
-    const deletarCategoria = async (categoria: Categoria) => {
+            if (res.ok) {
+                carregar();
+            }
+    } catch {}
+};
+    const deletarCategoria = async (id: number) => {
+        const token = localStorage.getItem("token");
+        if (!token) return;
         try {
-            const res = await fetch(`http://localhost:4000/categorias/${categoria.id}`, {
+            const res = await fetch(`http://localhost:4000/categorias/${id}`, {
                 method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
             });
-            if (!res.ok) throw new Error("Erro ao deletar categoria");
-            setCategorias((prev) => prev.filter((c) => c.id !== categoria.id));
-        } catch (err) {
-            console.error("Erro ao deletar categoria:", err);
-        }
-    };
+            if (res.ok) {
+                carregar();
+            }
+        } catch {}
+    };  
 
     return (
         <CategoriaContext.Provider value={{ categorias, addCategoria, deletarCategoria }}>

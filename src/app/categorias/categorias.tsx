@@ -1,7 +1,8 @@
-import { useCategorias } from "@/contexts/CategoriaContext";
+import { useCategorias } from "../../contexts/CategoriaContext";
 import styles from "./categorias.module.css";
 import { categorias as categoriasFixas } from "../data/categorias";
-import { useToast } from "@/contexts/ToastContext";
+import { useToast } from "../../contexts/ToastContext";
+import React from "react";
 
 export default function Categorias() {
     const { categorias, addCategoria, deletarCategoria } = useCategorias();
@@ -18,16 +19,30 @@ export default function Categorias() {
         ],
     };
 
-    const handleAdd = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleAdd = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const form = e.currentTarget;
         const nome = form.nome.value.trim();
         const tipo = form.tipo.value.trim();
         if (!nome || !tipo) return;
-        addCategoria({ nome, tipo });
-        showToast("Categoria criada com sucesso!", "success");
-        form.reset();
+        
+        try {
+            await addCategoria(nome, tipo); 
+            showToast("Categoria criada com sucesso!", "success");
+            form.reset();
+        } catch {
+            showToast("Erro ao criar categoria", "danger");
+        }
     };
+
+    const handleDeletar = async (categoria: { id: number }) => {
+        try {
+            await deletarCategoria(categoria.id);
+            showToast("Categoria deletada!", "success");
+        } catch {
+            showToast("Erro ao deletar", "danger");
+        }
+};
 
     return (
         <div className={styles.main}>
@@ -66,15 +81,16 @@ export default function Categorias() {
                         <h2>Categorias de Receitas</h2>
                     </div>
                     <ul className={styles.renderizacaoTodasCategorias}>
-                        {categoriasCompletas.Receita.map((categoria, index) => {
-                            const categoriaObj = categorias.find(c => c.nome === categoria && c.tipo === "receita");
+                        {categoriasCompletas.Receita.map((nome) => {
+                            const categoriaObj = categorias.find(c => c.nome === nome && c.tipo === "receita");
+                            const key = categoriaObj?.id ?? nome;
                             return (
-                                <li key={index} className={styles.renderizacaoItemReceita}>
-                                    {categoria}
+                                <li key={key} className={styles.renderizacaoItemReceita}>
+                                    {nome}
                                     {categoriaObj && (
                                         <button 
                                             className="btn p-0"
-                                            onClick={() => deletarCategoria(categoriaObj)}>
+                                            onClick={() => handleDeletar(categoriaObj)}>
                                             <i className="bi bi-trash iconTrash"></i>
                                         </button>
                                     )}
@@ -91,15 +107,16 @@ export default function Categorias() {
                         <h2>Categorias de Despesas</h2>
                     </div>
                     <ul className={styles.renderizacaoTodasCategorias}>
-                        {categoriasCompletas.Despesa.map((categoria, index) => {
-                            const categoriaObj = categorias.find(c => c.nome === categoria && c.tipo === "despesa");
+                        {categoriasCompletas.Despesa.map((nome) => {
+                            const categoriaObj = categorias.find(c => c.nome === nome && c.tipo === "despesa");
+                            const key = categoriaObj?.id ?? nome;
                             return (
-                                <li key={index} className={styles.renderizacaoItemDespesa}>
-                                    {categoria}
+                                <li key={key} className={styles.renderizacaoItemDespesa}>
+                                    {nome}
                                     {categoriaObj && (
                                         <button
                                             className="btn p-0"
-                                            onClick={() => deletarCategoria(categoriaObj)}>
+                                            onClick={() => handleDeletar(categoriaObj)}>
                                             <i className="bi bi-trash iconTrash"></i>
                                         </button>
                                     )}

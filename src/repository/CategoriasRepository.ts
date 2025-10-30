@@ -1,20 +1,24 @@
+import { prisma } from "@/lib/prisma";
+import { CategoriaFromAPI } from "@/types";
+
 export class CategoriasRepository {
-    private categorias: { id: number; nome: string; tipo: string}[] = [];
-
-    async criar(nome: string, tipo: string) {
-        const novaCategoria = { id: Date.now(), nome, tipo };
-        this.categorias.push(novaCategoria);
-        return novaCategoria;
+    async criar(nome: string, tipo: "receita" | "despesa", userId: number): Promise<CategoriaFromAPI> {
+        return prisma.categoria.create({
+            data: { nome, tipo, userId }
+        });
     }
 
-    async listar() {
-        return this.categorias;
+    async listarPorUser(userId: number): Promise<CategoriaFromAPI[]> {
+        return prisma.categoria.findMany({
+            where: { userId },
+            orderBy: { nome: "asc" }
+        });
     }
 
-    async deletar(id: number) {
-        this.categorias = this.categorias.filter(c => c.id !== id);
-        return true;
+    async deletar(id: number, userId: number): Promise<void> {
+        await prisma.categoria.deleteMany({
+            where: { id, userId }
+        });
     }
 }
 
-export const categoriasRepository = new CategoriasRepository();

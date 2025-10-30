@@ -1,14 +1,14 @@
 import { Router } from "express";
-import { CategoriasController } from "../controllers/CategoriasController.ts";
+import { CategoriasController } from "../controllers/CategoriasController";
+import { authenticateToken } from "../middlewares/authMiddleware";
 
 const router = Router();
-
 const categoriasController = new CategoriasController()
 
-router.post("/", (req, res) => categoriasController.criar(req, res));
-router.get("/", (req, res) => categoriasController.listar(req, res));
-router.delete("/:id", (req, res) => categoriasController.deletar(req, res));
+router.use(authenticateToken);
 
-
+router.post("/", categoriasController.criar.bind(categoriasController));
+router.get("/", categoriasController.listar.bind(categoriasController));
+router.delete("/:id", categoriasController.deletar.bind(categoriasController));
 
 export default router;
