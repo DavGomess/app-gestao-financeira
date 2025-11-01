@@ -1,12 +1,11 @@
 import styles from "./metas.module.css"
-import { useCategorias } from "@/contexts/CategoriaContext";
-import { useMetas } from "@/contexts/MetasContext";
-import { useToast } from "@/contexts/ToastContext"
+import { useCategorias } from "../../contexts/CategoriaContext";
+import { useMetas } from "../../contexts/MetasContext";
+import { useToast } from "../../contexts/ToastContext"
 import { useState } from "react";
 import CategoriaModal from "../components/CategoriaModal";
-import { categorias as categoriasFixas } from "../data/categorias";
 import DatePicker from "react-datepicker";
-import { Meta } from "@/types/CriarContaInput";
+import { MetaLocal } from "../../types";
 
 
 export default function Metas() {
@@ -22,32 +21,53 @@ export default function Metas() {
     const [editandoMetaId, setEditandoMetaId] = useState<number | null>(null);
     const [modoEdicao, setModoEdicao] = useState(false);
 
+    const categoriaMap = new Map<string, number>();
+    categorias.forEach(c => categoriaMap.set(c.nome, c.id));
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        adicionarMeta({
-            titulo,
-            categoria: selectedCategoria,
-            valor: Number(valorDesejado),
-            valorAtual: 0,
-            prazo: novaData ? novaData.toISOString() : "",
-        });
-        showToast("Meta criada com sucesso!", "success");
+    const resetForm = () => {
         setTitulo("");
         setValorDesejado("");
         setSelectedCategoria("");
         setNovaData(null);
+    };
+
+    const displayCategoriaNome = (categoriaId: number | null) => {
+        if (categoriaId === null) return "Sem categoria";
+        const cat = categorias.find(c => c.id === categoriaId);
+        return cat?.nome ?? "Desconhecida";
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const categoriaId = categoriaMap.get(selectedCategoria) ?? null;
+        try {
+            await adicionarMeta({
+                titulo,
+                categoriaId,
+                valor: Number(valorDesejado),
+                prazo: novaData!.toISOString(),
+            });
+            showToast("Meta criada!", "success");
+            resetForm();
+        } catch {
+            showToast("Erro ao criar", "danger");
+        }
     }
 
-    const handleAdicionarValor = (metaId: number) => {
+    const handleAdicionarValor = async (metaId: number) => {
         const valorDigitado = valorAdicionar[metaId] ?? "";
         const valor = valorDigitado === "" ? 0 : Number(valorDigitado.replace(",", "."));
 
         if (isNaN(valor) || valor <= 0) return;
 
-        adicionarValorMeta(metaId, valor);
-        setValorAdicionar((prev) => ({ ...prev, [metaId]: "" }))
-    }
+        try {
+            await adicionarValorMeta(metaId, valor); // ← await
+            setValorAdicionar(prev => ({ ...prev, [metaId]: "" }));
+            showToast("Valor adicionado!", "success");
+        } catch {
+            showToast("Erro ao adicionar valor", "danger");
+        }
+    };
 
     const handleOpenCategoriaModal = () => setOpenModal("categoria");
     const handleCloseModal = () => setOpenModal(null);
@@ -57,20 +77,14 @@ export default function Metas() {
         handleCloseModal();
     };
 
+    const categoriasParaModal = {
+    Receita: categorias.filter(c => c.tipo === "receita").map(c => c.nome),
+    Despesa: categorias.filter(c => c.tipo === "despesa").map(c => c.nome),
+};
+
     const displayCategorias = () => {
         if (!selectedCategoria) return "Categoria";
         return selectedCategoria;
-    };
-
-    const categoriasCompletas = {
-        Receita: [
-            ...categoriasFixas.Receita.filter((c) => c !== "Todos"),
-            ...categorias.filter((c) => c.tipo === "receita").map((c) => c.nome),
-        ],
-        Despesa: [
-            ...categoriasFixas.Despesa.filter((c) => c !== "Todos"),
-            ...categorias.filter((c) => c.tipo === "despesa").map((c) => c.nome),
-        ],
     };
 
     const calcularProgresso = (valorAtual: number, limite: number) => {
@@ -83,7 +97,7 @@ export default function Metas() {
         if (!prazo) return Infinity;
 
         const data = prazo instanceof Date ? new Date(prazo) : new Date(prazo);
-        if (Number.isNaN(data.getTime())) return Infinity; 
+        if (Number.isNaN(data.getTime())) return Infinity;
 
         const msPorDia = 24 * 60 * 60 * 1000;
         const hoje = new Date();
@@ -94,38 +108,36 @@ export default function Metas() {
         return diffDias;
     };
 
-    const handleEditClick = (meta: Meta) => {
+    const handleEditClick = (meta: MetaLocal) => {
         setModoEdicao(true);
         setEditandoMetaId(meta.id);
         setTitulo(meta.titulo);
-        setSelectedCategoria(meta.categoria);
+        setSelectedCategoria(displayCategoriaNome(meta.categoriaId));
         setValorDesejado(meta.valor.toString());
         setNovaData(meta.prazo ? new Date(meta.prazo) : null);
     }
 
-    const handleEdit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleEdit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
-        if (editandoMetaId === null) return;
-
-        const metaAtualizada: Meta = {
+        if (!editandoMetaId) return;
+        const categoriaId = categoriaMap.get(selectedCategoria) ?? null;
+        const metaAtualizada: MetaLocal = {
             id: editandoMetaId,
             titulo,
-            categoria: selectedCategoria,
+            categoriaId,
             valor: Number(valorDesejado),
-            valorAtual: metas.find((m) => m.id === editandoMetaId)?.valorAtual ?? 0,
-            prazo: novaData ? novaData.toISOString() : "",
+            valorAtual: metas.find(m => m.id === editandoMetaId)?.valorAtual ?? 0,
+            prazo: novaData!.toISOString(),
         };
-
-        editarMeta(metaAtualizada);
-        showToast("Meta editada com sucesso!", "success");
-
-        setModoEdicao(false);
-        setEditandoMetaId(null);
-        setTitulo("");
-        setValorDesejado("");
-        setSelectedCategoria("");
-        setNovaData(null);
+        try {
+            await editarMeta(metaAtualizada);
+            showToast("Meta editada!", "success");
+            resetForm();
+            setModoEdicao(false);
+            setEditandoMetaId(null);
+        } catch {
+            showToast("Erro ao editar", "danger");
+        }
     }
 
     return (
@@ -182,7 +194,7 @@ export default function Metas() {
                             <div className={styles.headerMetas}>
                                 <h5 className="m-0">{meta.titulo}</h5>
                                 <div className={styles.categoriaMetas}>
-                                    <h6 className="m-0">{meta.categoria}</h6>
+                                    <h6 className="m-0">{displayCategoriaNome(meta.categoriaId)}</h6>
                                 </div>
                                 <div className={styles.iconsMetas}>
                                     <i className="bi bi-pencil iconPencil" onClick={() => handleEditClick(meta)}></i>
@@ -206,15 +218,15 @@ export default function Metas() {
                                         <input type="number" value={valorAdicionar[meta.id] ?? ""} onChange={(e) => setValorAdicionar((prev) => ({
                                             ...prev,
                                             [meta.id]: (e.target.value)
-                                        }))} 
-                                        disabled={meta.valorAtual >= meta.valor || calcularDiasRestantes(meta.prazo) <= 0}
+                                        }))}
+                                            disabled={meta.valorAtual >= meta.valor || calcularDiasRestantes(meta.prazo) <= 0}
                                         />
                                     </div>
-                                    <button 
-                                    className="btn btn-primary h-50"
-                                    onClick={() => handleAdicionarValor(meta.id)}
-                                    type="button"
-                                    disabled={meta.valorAtual >= meta.valor || calcularDiasRestantes(meta.prazo) <= 0}
+                                    <button
+                                        className="btn btn-primary h-50"
+                                        onClick={() => handleAdicionarValor(meta.id)}
+                                        type="button"
+                                        disabled={meta.valorAtual >= meta.valor || calcularDiasRestantes(meta.prazo) <= 0}
                                     >+ adicionar</button>
                                     <div>
                                         <label htmlFor="meta">Meta</label>
@@ -250,7 +262,7 @@ export default function Metas() {
                         multiple={false}
                         onClose={handleCloseModal}
                         onSelect={handleSelectCategoria}
-                        categorias={categoriasCompletas}
+                        categorias={categoriasParaModal}
                     />
                 )
             }
