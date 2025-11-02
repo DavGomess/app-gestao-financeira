@@ -5,26 +5,30 @@ import { jsPDF } from "jspdf";
 import autoTable from 'jspdf-autotable';
 import { useState } from "react";
 import styles from "./relatorios.module.css"
-import { useTransacoes } from "@/contexts/TransacoesContext";
-import { categorias } from "../data/categorias";
-import { Transacao } from "@/types/CriarContaInput";
+import { useTransacoes } from "../../contexts/TransacoesContext";
+import { useCategorias } from "../../contexts/CategoriaContext";
+import { Transacao } from "../../types";
 
 
 export default function Relatorios() {
     const { transacoes } = useTransacoes();
     const [formato, setFormato] = useState("");
+    const { categorias } = useCategorias();
     const [mes, setMes] = useState("");
     const [ano, setAno] = useState("");
     const [todosPeriodos, setTodosPeriodos] = useState(false);
 
+    const categoriaMap = new Map<number, { nome: string; tipo: string }>();
+    categorias.forEach(c => categoriaMap.set(c.id, { nome: c.nome, tipo: c.tipo }));
+
     const isValidToDownload = todosPeriodos || (formato && mes && ano);
 
-    function filtrarTransacoes(transacao: Transacao[]): Transacao[] {
-        let filtradas = transacao;
-        const mesNum = mes ? Number(mes) : null
+    function filtrarTransacoes(transacoes: Transacao[]): Transacao[] {
+        let filtradas = transacoes;
 
-        if (!todosPeriodos) {
-            filtradas = filtradas.filter((t) => {
+        if (!todosPeriodos && (mes || ano)) {
+            const mesNum = mes ? Number(mes) : null
+            filtradas = filtradas.filter(t => {
                 const data = new Date(t.data);
                 const anoMatch = ano ? String(data.getFullYear()) === ano : true;
                 const mesMatch = mesNum ? (data.getMonth() + 1) === mesNum : true;
@@ -33,9 +37,9 @@ export default function Relatorios() {
         }
 
         if (formato === "receita") {
-            filtradas = filtradas.filter((t) => categorias.Receita.includes(t.categoria));
+            filtradas = filtradas.filter(t => categoriaMap.get(t.categoriaId)?.tipo === "receita");
         } else if (formato === "despesa") {
-            filtradas = filtradas.filter((t) => categorias.Despesa.includes(t.categoria));
+            filtradas = filtradas.filter(t => categoriaMap.get(t.categoriaId)?.tipo === "despesa");
         }
 
         return filtradas;
@@ -50,7 +54,7 @@ export default function Relatorios() {
 
     const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
     ];
-    const getNomeAquivo = (ext: string) => {
+    const getNomeArquivo = (ext: string) => {
         if (todosPeriodos) return `relatorio_completo.${ext}`;
         if (mes && ano) {
             const mesNome = Number(mes)
@@ -61,18 +65,26 @@ export default function Relatorios() {
     }
 
     const handleDownloadExecel = () => {
-        const dados = filtrarTransacoes(transacoes);
+        const dados = filtrarTransacoes(transacoes.filter(t => t.categoriaId !== null) as Transacao[]);
 
-        const totalReceitas = dados.filter(d => d.tipo?.toLowerCase() === "receita").length;
-        const totalDespesas = dados.filter(d => d.tipo?.toLowerCase() === "despesa").length;
+        const totalReceitas = dados
+            .filter(d => categoriaMap.get(d.categoriaId)?.tipo === "receita")
+            .reduce((acc, d) => acc + d.valor, 0);
 
-        const dadosFormatados = dados.map((d) => ({
-            Nome: d.nome,
-            Categoria: d.categoria,
-            Valor: d.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
-            Tipo: d.tipo ? d.tipo.toLowerCase() : categorias.Despesa.includes(d.categoria) ? "despesa" : "receita",
-            Date: new Date(d.data).toLocaleDateString("pt-BR")
-        }))
+        const totalDespesas = dados
+            .filter(d => categoriaMap.get(d.categoriaId)?.tipo === "despesa")
+            .reduce((acc, d) => acc + d.valor, 0);
+
+        const dadosFormatados = dados.map(d => {
+            const cat = categoriaMap.get(d.categoriaId);
+            return {
+                Nome: d.nome,
+                Categoria: cat?.nome ?? "Desconhecida",
+                Valor: d.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+                Tipo: cat?.tipo ?? "desconhecida",
+                Date: new Date(d.data).toLocaleDateString("pt-BR")
+            }
+        })
         const worksheet = XLSX.utils.json_to_sheet(
             [
                 { Nome: `Receitas: ${totalReceitas}`, Categoria: `Despesas: ${totalDespesas}` },
@@ -126,8 +138,9 @@ export default function Relatorios() {
     };
 
     const handleDownloadPDF = () => {
+        const dados = filtrarTransacoes(transacoes.filter(t => t.categoriaId !== null) as Transacao[]);
+
         const doc = new jsPDF();
-        const dados = filtrarTransacoes(transacoes);
         const pageWidth = doc.internal.pageSize.getWidth();
 
         const titulo = getTituloRelatorio();
@@ -139,20 +152,13 @@ export default function Relatorios() {
         doc.setTextColor(255, 255, 255);
         doc.text(titulo, pageWidth / 2, 20, { align: "center" });
 
-        const parseValor = (valor: string | number): number => {
-            if (typeof valor === "string") {
-                return parseFloat(valor.replace(/\./g, "").replace(",", "."));
-            }
-            return Number(valor) || 0;
-        }
-
         const totalReceitas = dados
-            .filter(d => (d.tipo?.toLowerCase() === "receita") || categorias.Receita.includes(d.categoria))
-            .reduce((acc, cur) => acc + parseValor(cur.valor), 0);
+            .filter(d => categoriaMap.get(d.categoriaId)?.tipo === "receita")
+            .reduce((acc, d) => acc + d.valor, 0);
 
         const totalDespesas = dados
-            .filter(d => (d.tipo?.toLowerCase() === "despesa") || categorias.Despesa.includes(d.categoria))
-            .reduce((acc, cur) => acc + parseValor(cur.valor), 0);
+            .filter(d => categoriaMap.get(d.categoriaId)?.tipo === "despesa")
+            .reduce((acc, d) => acc + d.valor, 0);
 
         const cardWidth = 80;
         const cardHeight = 12;
@@ -180,19 +186,22 @@ export default function Relatorios() {
         autoTable(doc, {
             startY: 55,
             head: [["nome", "Categoria", "Valor (R$)", "Tipo", "Data"]],
-            body: dados.map((d) => [
-                d.nome,
-                d.categoria,
-                d.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
-                (d.tipo ? d.tipo.toLowerCase() : categorias.Despesa.includes(d.categoria) ? "despesa" : "receita"),
-                new Date(d.data).toLocaleDateString("pt-BR")
-            ]),
+            body: dados.map((d) => {
+                const cat = categoriaMap.get(d.categoriaId);
+                return [
+                    d.nome,
+                    cat?.nome ?? "Desconhecida",
+                    d.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+                    cat?.tipo ?? "desconhecida",
+                    new Date(d.data).toLocaleDateString("pt-BR")
+                ];
+            }),
             theme: "grid",
             headStyles: { fillColor: [220, 38, 38] },
             styles: { halign: "center" },
         });
 
-        doc.save(getNomeAquivo("pdf"))
+        doc.save(getNomeArquivo("pdf"))
     };
 
     return (
@@ -218,7 +227,7 @@ export default function Relatorios() {
                                         top: "50%",
                                         transform: "translateY(-50%)",
                                         pointerEvents: "none",
-                                        color: "var(--icon-color",
+                                        color: "var(--icon-color)",
                                     }}
                                 ></i>
                             </div>
@@ -226,22 +235,22 @@ export default function Relatorios() {
                         <div className={styles.infoInputsMes}>
                             <label htmlFor="mes">Mês Escolhido</label>
                             <div className="position-relative">
-                            <select className="form-select" value={mes} onChange={(e) => setMes(e.target.value)} required={!todosPeriodos} disabled={todosPeriodos}>
-                                <option value="" disabled>Selecione</option>
-                                <option value="1">Janeiro</option>
-                                <option value="2">Fevereiro</option>
-                                <option value="3">Março</option>
-                                <option value="4">Abril</option>
-                                <option value="5">Maio</option>
-                                <option value="6">Junho</option>
-                                <option value="7">Julho</option>
-                                <option value="8">Agosto</option>
-                                <option value="9">Setembro</option>
-                                <option value="10">Outubro</option>
-                                <option value="11">Novembro</option>
-                                <option value="12">Dezembro</option>
-                            </select>
-                            <i
+                                <select className="form-select" value={mes} onChange={(e) => setMes(e.target.value)} required={!todosPeriodos} disabled={todosPeriodos}>
+                                    <option value="" disabled>Selecione</option>
+                                    <option value="1">Janeiro</option>
+                                    <option value="2">Fevereiro</option>
+                                    <option value="3">Março</option>
+                                    <option value="4">Abril</option>
+                                    <option value="5">Maio</option>
+                                    <option value="6">Junho</option>
+                                    <option value="7">Julho</option>
+                                    <option value="8">Agosto</option>
+                                    <option value="9">Setembro</option>
+                                    <option value="10">Outubro</option>
+                                    <option value="11">Novembro</option>
+                                    <option value="12">Dezembro</option>
+                                </select>
+                                <i
                                     className="bi bi-chevron-down"
                                     style={{
                                         position: "absolute",
@@ -257,12 +266,12 @@ export default function Relatorios() {
                         <div className={styles.infoInputsAno}>
                             <label htmlFor="ano">Ano Escolhido</label>
                             <div className="position-relative">
-                            <select className="form-select" value={ano} onChange={(e) => setAno(e.target.value)} required={!todosPeriodos} disabled={todosPeriodos}>
-                                <option value="" disabled>Selecione</option>
-                                <option value="2025">2025</option>
-                                <option value="2024">2024</option>
-                            </select>
-                            <i
+                                <select className="form-select" value={ano} onChange={(e) => setAno(e.target.value)} required={!todosPeriodos} disabled={todosPeriodos}>
+                                    <option value="" disabled>Selecione</option>
+                                    <option value="2025">2025</option>
+                                    <option value="2024">2024</option>
+                                </select>
+                                <i
                                     className="bi bi-chevron-down"
                                     style={{
                                         position: "absolute",
