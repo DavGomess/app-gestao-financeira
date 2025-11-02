@@ -1,56 +1,55 @@
 "use client";
 
-import { Orcamento } from "@/types/CriarContaInput";
+import { OrcamentoLocal } from "../types";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 
 interface OrcamentosContextType {
-    orcamentos: Orcamento[];
-    adicionarOrcamento: (categoria: string, valor: number) => void;
-    removerOrcamento: (id: number) => void;
-    editarOrcamento: (id: number, categoria: string, valor: number) => void
+    orcamentos: OrcamentoLocal[];
+    upsert: (categoriaId: number, valor: number) => Promise<void>;
+    remover: (categoriaId: number) => Promise<void>;
 }
 
 const OrcamentosContext = createContext<OrcamentosContextType | undefined>(undefined);
 
-export function OrcamentosProvider({ children }: { children: ReactNode }) {
-    const [orcamentos, setOrcamentos] = useState<Orcamento[]>([]);
+export const OrcamentosProvider = ({ children }: { children: ReactNode }) => {
+    const [orcamentos, setOrcamentos] = useState<OrcamentoLocal[]>([]);
+    const API = "http://localhost:4000/orcamentos";
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+    const sync = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch(API, { headers: { Authorization: `Bearer ${token}` } });
+      if (res.ok) setOrcamentos(await res.json());
+    } catch {}
+  };
 
     useEffect(() => {
-        const saved = localStorage.getItem("orcamentos");
-        if (saved) {
-            try {
-                setOrcamentos(JSON.parse(saved));
-            } catch (error) {
-                console.error("Error ao carregar orçamentos", error);
-            }
-        }
-    }, []);
+        sync()
+    }, [token]);
 
-    useEffect(() => {
-        localStorage.setItem("orcamentos", JSON.stringify(orcamentos));
-    }, [orcamentos]);
+    const upsert = async (categoriaId: number, valor: number) => {
+    if (!token) return;
+    await fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ categoriaId, valor }),
+    });
+    await sync();
+  };
 
-    const adicionarOrcamento = (categoria: string, valor: number) => {
-        const novo: Orcamento = {
-            id: Date.now(),
-            categoria,
-            valor
-        }
-        setOrcamentos([novo]);
-    };
-
-    const removerOrcamento = (id: number) => {
-        setOrcamentos((prev) => prev.filter((o) => o.id !== id));
-    };
-
-    const editarOrcamento = (id: number, categoria: string, valor: number) => {
-        setOrcamentos((prev) => prev.map((o) => o.id === id ? { ...o, categoria, valor } : o))
-    };
-
+  const remover = async (categoriaId: number) => {
+    if (!token) return;
+    await fetch(`${API}/${categoriaId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    await sync();
+  };
 
 
     return (
-        <OrcamentosContext.Provider value={{ orcamentos, adicionarOrcamento, removerOrcamento, editarOrcamento }}>
+        <OrcamentosContext.Provider value={{ orcamentos, upsert, remover }}>
             {children}
         </OrcamentosContext.Provider>
     );
