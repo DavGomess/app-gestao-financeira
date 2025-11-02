@@ -1,10 +1,9 @@
-import { useTransacoes } from '@/contexts/TransacoesContext'
+import { useTransacoes } from '../../contexts/TransacoesContext'
 import styles from './dashboard.module.css'
-import { categorias as categoriasFixas } from "../data/categorias";
 import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { useCategorias } from '@/contexts/CategoriaContext';
-import { useDisplayPreferences } from '@/contexts/DisplayPreferencesContext';
-import { formatarValor } from "@/utils/formatarValor";
+import { useCategorias } from '../../contexts/CategoriaContext';
+import { useDisplayPreferences } from '../../contexts/DisplayPreferencesContext';
+import { formatarValor } from "../../utils/formatarValor";
 
 type PayloadItem = {
     payload: {
@@ -59,38 +58,25 @@ export default function Dashboard() {
         "#e0d041ff", "#f19797ff", "#75d88eff", "#d97706", "#6b21a8", "#065f46", "#cf16b0ff", "#1e3a8a", "#a00606ff", "#4338ca", "#0ec5c5ff", "#b45309", "#45b619ff", "#cf135eff", "#0c4a6e", "#4b5563", "#8c68cfff", "#5900ffd7", "#a33d78ff", "#3d86a3ff"
     ];
 
-    const categoriasCompletas = {
-        Receita: [
-            ...categoriasFixas.Receita.filter((c) => c !== "Todos"),
-            ...categorias.filter((c) => c.tipo === "receita").map((c) => c.nome),
-        ],
-        Despesa: [
-            ...categoriasFixas.Despesa.filter((c) => c !== "Todos"),
-            ...categorias.filter((c) => c.tipo === "despesa").map((c) => c.nome),
-        ],
-    };
 
-    const todasCategorias = [
-        ...categoriasCompletas.Receita,
-        ...categoriasCompletas.Despesa
-    ];
+    const totalReceitas = transacoes.filter(t => categorias.find(c => c.id === t.categoriaId)?.tipo === "receita")
+    .reduce((acc, t) => acc + t.valor, 0);
 
-    const totalReceitas = transacoes.filter(t => categoriasCompletas.Receita.includes(t.categoria)).reduce((acc, cur) =>
-        acc + Number(cur.valor), 0);
-    const totalDespesas = transacoes.filter(t => categoriasCompletas.Despesa.includes(t.categoria)).reduce((acc, cur) =>
-        acc + Number(cur.valor), 0);
+    const totalDespesas = transacoes.filter(t => categorias.find(c => c.id === t.categoriaId)?.tipo === "despesa")
+    .reduce((acc, t) => acc + t.valor, 0);
+
     const saldoFinal = totalReceitas - totalDespesas;
 
 
-    const transacoesPorCategorias = todasCategorias.map((cat, i) => {
-        const total = transacoes.filter(t => t.categoria === cat).reduce((acc, cur) => acc + Number(cur.valor), 0);
-        return { name: cat, value: total, color: COLORS[i % COLORS.length] };
+    const transacoesPorCategorias = categorias.map((cat, i) => {
+        const total = transacoes.filter(t => t.categoriaId === cat.id).reduce((acc, t) => acc + t.valor, 0);
+        return { name: cat.nome, value: total, color: COLORS[i % COLORS.length] };
     }).filter(d => d.value > 0);
 
     const receitasVsDespesasMensal = Array.from({ length: 12 }, (_, i) => {
-        const receitas = transacoes.filter(t => categoriasCompletas.Receita.includes(t.categoria) && new Date(t.data).getMonth() === i).reduce((acc, cur) => acc + Number(cur.valor), 0);
+        const receitas = transacoes.filter(t => categorias.find(c => c.id === t.categoriaId)?.tipo === "receita" && new Date(t.data).getMonth() === i).reduce((acc, t) => acc + t.valor, 0);
 
-        const despesas = transacoes.filter(t => categoriasCompletas.Despesa.includes(t.categoria) && new Date(t.data).getMonth() === i).reduce((acc, cur) => acc + Number(cur.valor), 0);
+        const despesas = transacoes.filter(t => categorias.find(c => c.id === t.categoriaId)?.tipo === "despesa" && new Date(t.data).getMonth() === i).reduce((acc, t) => acc + t.valor, 0);
 
         return { mes: i + 1, receitas, despesas };
     });
