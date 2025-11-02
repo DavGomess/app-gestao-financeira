@@ -1,24 +1,32 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
+import { useToast } from "../../contexts/ToastContext";
 import styles from "./login.module.css";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function Login() {
     const { login } = useAuth();
+    const { showToast } = useToast();
     const [email, setEmail] = useState("");
     const [senha, setSenha] = useState("");
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!email || !senha) return;
+        if (!email || !senha || !email.includes("@")) {
+            showToast("Email e senha são obrigatórios", "danger");
+            return;
+        }
 
         setLoading(true);
         try {
             await login(email, senha);
+            showToast("Login realizado com sucesso!", "success");
+        } catch {
+            showToast("Erro no login", "danger");
         } finally {
             setLoading(false);
         }
