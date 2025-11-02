@@ -1,8 +1,11 @@
 import { prisma } from "../lib/prisma";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { sendResetPasswordEmail } from "@/lib/sendResetPasswordEmail";
+import { JwtPayload } from "@/types";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
+const JWT_RESET_SECRET = process.env.JWT_RESET_SECRET as string;
 
 export class AuthService {
     static async register({ email, password }: { email: string; password: string }) {
@@ -40,4 +43,40 @@ export class AuthService {
 
     return jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: "7d" });
 }
+
+    static async requestPasswordReset(email: string) {
+    if (!email) throw new Error("E-mail obrigatório");
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) throw new Error("Usuário não encontrado");
+
+    const token = jwt.sign({ userId: user.id }, JWT_RESET_SECRET, { expiresIn: "15m" });
+
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+
+    await sendResetPasswordEmail(email, resetLink);
+
+    return { message: "E-mail de recuperação enviado" };
+}
+
+    static async resetPassword(token: string, newPassword: string) {
+    if (!newPassword || newPassword.length < 6) {
+        throw new Error("A nova senha deve ter pelo menos 6 caracteres");
+    }
+
+    let payload: JwtPayload;
+    try {
+        payload = jwt.verify(token, JWT_RESET_SECRET) as JwtPayload;
+    } catch {
+        throw new Error("Token inválido ou expirado");
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({
+        where: { id: payload.userId },
+        data: { password: hashed },
+    });
+
+    return { message: "Senha redefinida com sucesso" };
+    }
 }
