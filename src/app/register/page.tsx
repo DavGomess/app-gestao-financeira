@@ -1,0 +1,92 @@
+"use client";
+
+import { useState } from "react";
+import { useAuth } from "../../contexts/AuthContext";
+import styles from "./register.module.css";
+import Link from "next/link";
+import { useToast } from "../../contexts/ToastContext"
+import { useRouter } from "next/navigation";
+
+export default function Register() {
+    const { register } = useAuth();
+    const { showToast } = useToast();
+    const router = useRouter();
+
+    const [email, setEmail] = useState("");
+    const [senha, setSenha] = useState("");
+    const [confirmarSenha, setConfirmarSenha] = useState("");
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (senha !== confirmarSenha) {
+            showToast("As senhas não coincidem!", "danger");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            await register(email, senha);
+            showToast("Conta criada com sucesso!", "success");
+            router.push("/login");
+        } catch {
+            showToast("Erro ao criar conta", "danger");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const isDisabled = loading || email.trim() === "" || senha.trim() === "" || confirmarSenha.trim() === "";
+
+    return (
+        <div className={styles.container}>
+            <form onSubmit={handleSubmit} className={styles.card}>
+                <div className={styles.infoHeader}>
+                    <h4><i className="bi bi-person-plus-fill"></i>Criar Conta</h4>
+                </div>
+                <div className={styles.subTitulo}>
+                    <h5>Cadastre-se para começar.</h5>
+                </div>
+                <div className={styles.infoInput}>
+                    <label htmlFor="email">Email</label>
+                    <input
+                        type="email"
+                        placeholder="Insira seu E-mail"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
+                </div>
+                <div className={styles.infoInput}>
+                    <label htmlFor="senha">Senha</label>
+                    <input
+                        type="password"
+                        placeholder="Insira sua Senha"
+                        value={senha}
+                        onChange={(e) => setSenha(e.target.value)}
+                        required
+                    />
+                </div>
+                <div className={styles.infoInput}>
+                    <label htmlFor="confirmarSenha">Confirmar Senha</label>
+                    <input
+                        type="password"
+                        placeholder="Confirme sua Senha"
+                        value={confirmarSenha}
+                        onChange={(e) => setConfirmarSenha(e.target.value)}
+                        required
+                    />
+                </div>
+                <button type="submit" disabled={isDisabled}>
+                    <i className="bi bi-person-plus me-2"></i>
+                    {loading ? "Criando..." : "Criar Conta"}
+                </button>
+
+                <div className={styles.infoFooter}>
+                    <Link href={"/login"} className={styles.link}><p className={styles.linkLogin}>Já tem uma conta? Entrar</p></Link>
+                </div>
+            </form>
+        </div>
+    )
+}
