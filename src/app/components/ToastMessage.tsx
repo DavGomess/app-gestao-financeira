@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from "react";
-import { ToastProps } from "@/types/CriarContaInput";
+import { ToastProps } from "../../types";
 import type { Toast as BsToast } from "bootstrap";
 
 export default function ToastMessage({ id, message, type = "primary" }: ToastProps) {

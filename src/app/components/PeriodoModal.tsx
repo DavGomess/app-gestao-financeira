@@ -2,8 +2,8 @@ import { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import styles from '../transacoes/transacoes.module.css';
-import { PeriodoSelecionado } from '@/types/CriarContaInput';
-import { useToast } from "@/contexts/ToastContext";
+import { PeriodoSelecionado } from '../../types';
+import { useToast } from "../../contexts/ToastContext";
 
 type PeriodoModalProps = {
     onClose: () => void;

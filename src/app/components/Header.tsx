@@ -1,6 +1,6 @@
 "use client";
 
-import { useSelected } from "@/contexts/SelectedContext";
+import { useSelected } from "../../contexts/SelectedContext";
 import { menuItems } from "../data/menuItems";
 
 

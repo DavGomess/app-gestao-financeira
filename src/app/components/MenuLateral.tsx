@@ -1,9 +1,9 @@
 "use client";
 import Image from "next/image";
 import { menuItems } from "../data/menuItems";
-import { useSelected } from "@/contexts/SelectedContext";
+import { useSelected } from "../../contexts/SelectedContext";
 import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { useRouter } from "next/navigation";
 
 
