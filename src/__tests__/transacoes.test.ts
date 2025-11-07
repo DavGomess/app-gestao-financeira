@@ -8,11 +8,11 @@ beforeAll(async () => {
         .post("/auth/register")
         .send({ email: "user@test.com", password: "123456" });
 
-    const loginRes = await request(app)
+    const res = await request(app)
     .post("/auth/login")
     .send({ email: "user@test.com", password: "123456" });
 
-    token = loginRes.body.token;
+    token = res.body.token;
 });
 
 describe("Transações", () => {
@@ -23,5 +23,23 @@ describe("Transações", () => {
 
         expect(res.status).toBe(200);
         expect(Array.isArray(res.body)).toBe(true);
+    });
+
+    it("GET /transacoes/filtrar → 400 se termo ausente", async () => {
+        const res = await request(app)
+            .get("/transacoes/filtrar")
+            .set("Authorization", `Bearer ${token}`);
+
+        expect(res.status).toBe(400);
+        expect(res.body.message).toBe("Termo de busca inválido");
+    });
+
+    it("GET /transacoes/filtrar → 200 com termo válido", async () => {
+        const res = await request(app)
+            .get("/transacoes/filtrar")
+            .set("Authorization", `Bearer ${token}`)
+            .query({ termo: "aluguel" });
+
+        expect(res.status).toBe(200);
     });
 });

@@ -1,27 +1,68 @@
 import request from "supertest";
 import app from "../app";
 
-describe("Contas a Pagar", () => {
-    it("POST /contasPagar → cria despesa", async () => {
-        await request(app).post("/auth/register").send({ email: "user@test.com", password: "123456" });
-        const loginRes = await request(app).post("/auth/login").send({ email: "user@test.com", password: "123456" });
-        const token = loginRes.body.token;
+let token: string;
+let categoriaId: number;
+
+beforeAll(async () => {
+    await request(app)
+        .post("/auth/register")
+        .send({ email: "user@test.com", password:  "123456" });
+    const loginRes =  await request(app)
+        .post("/auth/login")
+        .send({ email: "user@test.com", password:  "123456" });
+    token = loginRes.body.token;
 
     const catRes = await request(app)
         .post("/categorias")
         .set("Authorization", `Bearer ${token}`)
-        .send({ nome: "Internet", tipo: "despesa" });
+        .send({ nome: "Moradia", tipo: "despesa" });
+    categoriaId = catRes.body.id;
+})
 
-    const res = await request(app)
-        .post("/contasPagar")
-        .set("Authorization", `Bearer ${token}`)
-        .send({
-            nome: "Internet",
-            valor: 99.9,
-            data: "2025-12-10",
-            categoriaId: catRes.body.id,
+describe("Contas a Pagar", () => {
+    it("POST /contasPagar → cria despesa", async () => {
+        const res = await request(app)
+            .post("/contasPagar")
+            .set("Authorization", `Bearer ${token}`)
+            .send({ nome: "Aluguel", valor: 1200.5, data: "2025-12-01", categoriaId, })
+
+        expect(res.status).toBe(201);
+        expect(res.body).toHaveProperty("id");
+        expect(res.body.nome).toBe("Aluguel");  
     });
 
-    expect(res.status).toBe(201);
-    });
+    it("POST /contasPagar → 400 se valor negativo", async () => {
+        const res = await request(app)
+            .post("/contasPagar")
+            .set("Authorization", `Bearer ${token}`)
+            .send({
+                nome: "Erro",
+                valor: -100,
+                data: "2025-12-01",
+                categoriaId,
+            });
+
+        expect(res.status).toBe(400);
+        expect(res.body.errors).toContainEqual(
+        expect.objectContaining({ field: "valor" })
+    );
+});
+
+    it("POST /contasPagar → 400 se data inválida", async () => {
+        const res = await request(app)
+            .post("/contasPagar")
+            .set("Authorization", `Bearer ${token}`)
+            .send({
+                nome: "Erro",
+                valor: 100,
+                data: "2025-13-01", 
+                categoriaId,
+        });
+
+        expect(res.status).toBe(400);
+        expect(res.body.errors).toContainEqual(
+        expect.objectContaining({ field: "data" })
+    );
+});
 });
