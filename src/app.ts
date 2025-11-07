@@ -1,0 +1,31 @@
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+
+import authRoutes from "./routes/authRoutes";
+import categoriaRoutes from "./routes/categoriasRoutes";
+import contasPagarRoutes from "./routes/contasPagarRoutes";
+import transacaoRoutes from "./routes/transacaoRoutes";
+import orcamentoRoutes from "./routes/orcamentosRoutes";
+
+dotenv.config();
+
+const app = express();
+
+
+app.use(express.json());
+app.use(cors({ origin: "http://localhost:3000" }));
+
+
+app.use("/auth", authRoutes);
+app.use("/categorias", categoriaRoutes);
+app.use("/contasPagar", contasPagarRoutes);
+app.use("/transacoes", transacaoRoutes);
+app.use("/orcamentos", orcamentoRoutes);
+
+app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error(err.stack);
+    res.status(500).json({ message: "Erro interno do servidor" });
+});
+
+export default app;
