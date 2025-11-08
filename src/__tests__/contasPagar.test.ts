@@ -61,6 +61,7 @@ describe("Contas a Pagar", () => {
         });
 
         expect(res.status).toBe(400);
+        expect(Array.isArray(res.body.errors)).toBe(true);
         expect(res.body.errors).toContainEqual(
         expect.objectContaining({ field: "data" })
     );

@@ -24,13 +24,21 @@ beforeAll(async () => {
 
 describe("Orçamentos", () => {
     it("POST /orcamentos → cria orçamento", async () => {
+    
+    const catRes = await request(app)
+        .post("/categorias")
+        .set("Authorization", `Bearer ${token}`)
+        .send({ nome: "Salário", tipo: "receita" });
+    
+    expect(catRes.status).toBe(201);
+    const categoriaId = catRes.body.id;
 
     const res = await request(app)
         .post("/orcamentos")
         .set("Authorization", `Bearer ${token}`)
         .send({ categoriaId, valor: 2000 });
 
-    expect(res.status).toBe(200); 
+    expect(res.status).toBe(201); 
     expect(res.body).toHaveProperty("categoriaId");
     expect(res.body.valor).toBe(2000);
 });

@@ -24,11 +24,20 @@ beforeAll(async () => {
 
 describe("Metas", () => {
     it("POST /metas → cria meta", async () => {
+
+        const catRes = await request(app)
+            .post("/categorias")
+            .set("Authorization", `Bearer ${token}`)
+            .send({ nome: "Teste", tipo: "receita" });
+        
+        expect(catRes.status).toBe(201);
+        const categoriaId = catRes.body.id;
+
         const res = await request(app)
             .post("/metas")
             .set("Authorization", `Bearer ${token}`)
             .send({
-                nome: "Carro Novo",
+                titulo: "Carro Novo",
                 valorAlvo: 50000,
                 prazo: "2026-12-31",
                 categoriaId,
@@ -43,7 +52,7 @@ describe("Metas", () => {
             .post("/metas")
             .set("Authorization", `Bearer ${token}`)
             .send({
-                nome: "Erro",
+                titulo: "Erro",
                 valorAlvo: -100,
                 prazo: "2026-12-31",
                 categoriaId,

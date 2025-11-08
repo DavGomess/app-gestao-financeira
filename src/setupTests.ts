@@ -13,6 +13,7 @@ beforeAll(async () => {
 
 afterEach(async () => {
 
+    await prisma.meta.deleteMany();
     await prisma.orcamento.deleteMany();
     await prisma.transacao.deleteMany();
     await prisma.categoria.deleteMany();
