@@ -1,11 +1,10 @@
-import { Response } from "express";
-import { AuthenticatedRequest } from "@/middlewares/authMiddleware";
+import { Request, Response } from "express";
 import { TransacaoService } from "../services/TransacaoService";
 
 const transacaoService = new TransacaoService();
 
 export class TransacaoController {
-    async listar(req: AuthenticatedRequest, res: Response) {
+    async listar(req: Request, res: Response) {
     try {
         if (!req.user) {
         return res.status(401).json({ message: "Usuário não autenticado" });
@@ -20,7 +19,7 @@ export class TransacaoController {
     }
 }
 
-    async filtrar(req: AuthenticatedRequest, res: Response) {
+    async filtrar(req: Request, res: Response) {
     try {
         if (!req.user) {
         return res.status(401).json({ message: "Usuário não autenticado" });

@@ -1,11 +1,10 @@
-import { AuthenticatedRequest } from "@/middlewares/authMiddleware";
-import { Response } from "express";
+import { Request, Response } from "express";
 import { MetasService } from "@/services/MetasService";
 
 const service = new MetasService();
 
 export class MetasController {
-    async criar(req: AuthenticatedRequest, res: Response) {
+    async criar(req: Request, res: Response) {
         try {
             if (!req.user) return res.status(401).json({ error: "Não autenticado" });
             const meta = await service.criar(req.body, req.user.id);
@@ -16,7 +15,7 @@ export class MetasController {
 }
     }
 
-    async listar(req: AuthenticatedRequest, res: Response) {
+    async listar(req: Request, res: Response) {
         try {
             if (!req.user) return res.status(401).json({ error: "Não autenticado" });
             const metas = await service.listar(req.user.id);
@@ -27,7 +26,7 @@ export class MetasController {
 }
     }
 
-    async adicionarValor(req: AuthenticatedRequest, res: Response) {
+    async adicionarValor(req: Request, res: Response) {
         try {
             if (!req.user) return res.status(401).json({ error: "Não autenticado" });
             const { id } = req.params;
@@ -40,7 +39,7 @@ export class MetasController {
 }
     }
 
-    async editar(req: AuthenticatedRequest, res: Response) {
+    async editar(req: Request, res: Response) {
         try {
             if (!req.user) return res.status(401).json({ error: "Não autenticado" });
             const meta = await service.editar(req.body, req.user.id);
@@ -51,7 +50,7 @@ export class MetasController {
 }
     }
 
-    async deletar(req: AuthenticatedRequest, res: Response) {
+    async deletar(req: Request, res: Response) {
         try {
             if (!req.user) return res.status(401).json({ error: "Não autenticado" });
             const { id } = req.params;

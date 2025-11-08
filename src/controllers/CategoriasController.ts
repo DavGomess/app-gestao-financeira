@@ -1,16 +1,15 @@
-import { Response } from "express";   
+import { Request, Response } from "express";   
 import { CategoriasService } from "../services/CategoriasService";
-import { AuthenticatedRequest } from "@/middlewares/authMiddleware";
 
 const service = new CategoriasService();
 
 export class CategoriasController {
-    async criar(req: AuthenticatedRequest, res: Response) {
+    async criar(req: Request, res: Response) {
         try {
             if (!req.user) return res.status(401).json({ error: "Não autenticado." });
             const { nome, tipo } = req.body;
-            if (!nome || ["receita", "despesa"].includes(tipo)) {
-                return res.status(400).json({ error: "Dados inválidos." });
+            if (!nome || !["receita", "despesa"].includes(tipo)) {
+                return res.status(400).json({ error: "Nome e tipo (receita ou despesa) são obrigatórios." });
             }
             const categoria = await service.criar(nome, tipo as "receita" | "despesa", req.user.id);
             return res.status(201).json(categoria);
@@ -19,7 +18,7 @@ export class CategoriasController {
         }
     };
 
-    async listar(req: AuthenticatedRequest, res: Response) {
+    async listar(req: Request, res: Response) {
         try {
             if (!req.user) return res.status(401).json({ error: "Não autorizado" });
             const categorias = await service.listar(req.user.id);
@@ -29,7 +28,7 @@ export class CategoriasController {
         }
     };
 
-    async deletar(req: AuthenticatedRequest, res: Response) {
+    async deletar(req: Request, res: Response) {
         try {
             if (!req.user) return res.status(401).json({ error: "Não autorizado" })
             const id = Number(req.params.id);

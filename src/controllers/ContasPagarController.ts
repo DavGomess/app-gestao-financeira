@@ -1,35 +1,14 @@
 import { Request, Response } from "express";
 import { ContasService } from "../services/ContasPagarService";
-import { AuthenticatedRequest } from "../middlewares/authMiddleware";
-import { prisma } from "@/lib/prisma";
 
 export class ContasPagarController {
     private contasService = new ContasService();
 
     
-    async criar(req: AuthenticatedRequest, res: Response) {
+    async criar(req: Request, res: Response) {
         try {
             const { nome, valor, categoriaId, data } = req.body;
-
-            if (!nome || !valor || !data) {
-            return res.status(400).json({ error: "Todos os campos são obrigatórios" });
-        }
-
-            if (valor <= 0) {
-            return res.status(400).json({ error: "Valor deve ser positivo" });
-        }
-
-            const userId = req.user?.id;
-            if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
-
-            if (categoriaId) {
-                const categoria = await prisma.categoria.findFirst({
-                    where: { id: categoriaId, userId },
-                });
-            if (!categoria) {
-                return res.status(400).json({ error: "Categoria inválida ou não pertence ao usuário" });
-            }
-    }
+            const userId = req.user!.id;
 
         const conta = await this.contasService.criarContaService({
             nome,
@@ -48,10 +27,9 @@ export class ContasPagarController {
         }
     }
 
-    async listar(req: AuthenticatedRequest, res: Response) {
+    async listar(req: Request, res: Response) {
         try {
-            const userId = req.user?.id;
-            if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+            const userId = req.user!.id;
 
             const contas = await this.contasService.listarContasService(userId);
             return res.json(contas);
@@ -61,10 +39,9 @@ export class ContasPagarController {
     }
     }
 
-    async editar(req: AuthenticatedRequest, res: Response) {
+    async editar(req: Request, res: Response) {
     try {
-        const userId = req.user?.id;
-        if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+        const userId = req.user!.id
 
         const conta = await this.contasService.editarContaService(Number(req.params.id), req.body, userId);
         return res.json(conta);
@@ -74,10 +51,9 @@ export class ContasPagarController {
     }
 }
 
-    async deletar(req: AuthenticatedRequest, res: Response) {
+    async deletar(req: Request, res: Response) {
         try {
-            const userId = req.user?.id;
-            if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+            const userId = req.user!.id;
 
             await this.contasService.deleteContaService(Number(req.params.id), userId);
             return res.status(204).send();
