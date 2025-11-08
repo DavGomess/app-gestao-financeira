@@ -1,3 +1,4 @@
+import { prisma } from "@/lib/prisma";
 import { MetasRepository } from "@/repository/MetasRepository";
 import { MetaFromAPI, MetaInput, MetaLocal } from "@/types";
 
@@ -5,10 +6,22 @@ export class MetasService {
     private repository = new MetasRepository();
 
     async criar(input: MetaInput, userId: number): Promise<MetaLocal> {
+        if (input.categoriaId) {
+            const categoria = await prisma.categoria.findFirst({
+                where: {
+                    id: input.categoriaId,
+                    userId,
+                },
+        });
+
+        if (!categoria) {
+            throw new Error("Categoria inválida ou não pertence ao usuário");
+        }
+    }
         const data = await this.repository.criar({
             titulo: input.titulo,
             categoriaId: input.categoriaId,
-            valor: input.valor,
+            valor: input.valorAlvo,
             prazo: new Date(input.prazo),
             userId
         });
@@ -34,7 +47,7 @@ export class MetasService {
                 id: meta.id,
                 titulo: meta.titulo,
                 categoriaId: meta.categoriaId,
-                valor: meta.valor,
+                valor: meta.valorAlvo,
                 valorAtual: meta.valorAtual,
                 prazo: new Date(meta.prazo)
             },
@@ -52,7 +65,7 @@ export class MetasService {
             id: meta.id,
             titulo: meta.titulo,
             categoriaId: meta.categoriaId,
-            valor: Number(meta.valor),
+            valorAlvo: Number(meta.valor),
             valorAtual: Number(meta.valorAtual),
             prazo: meta.prazo.toISOString()
         }

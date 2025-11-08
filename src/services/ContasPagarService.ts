@@ -1,10 +1,25 @@
 import { criarConta, listarConta, editarConta, deleteConta } from "../repository/ContasPagarRepository";
 import { definirStatus } from "../utils/status";
 import { CriarContaInput } from  "../types"
+import { prisma } from "@/lib/prisma";
 
 
 export class ContasService {
     async criarContaService(dados: CriarContaInput, userId: number) {
+        
+        if (dados.categoriaId) {
+            const categoria = await prisma.categoria.findFirst({
+            where: {
+                id: dados.categoriaId,
+                userId,
+            },
+        });
+
+        if (!categoria) {
+            throw new Error("Categoria inválida ou não pertence ao usuário");
+        }
+    }
+
         const status = definirStatus(dados.data);
         return criarConta(
             {
