@@ -23,13 +23,18 @@ export default function Login() {
 
         setLoading(true);
         try {
-            await login(email, senha);
+        const success = await login(email, senha); 
+
+        if (success) {
             showToast("Login realizado com sucesso!", "success");
-        } catch {
-            showToast("Erro no login", "danger");
-        } finally {
-            setLoading(false);
+        } else {
+            showToast("Email ou senha incorretos", "danger");
         }
+    } catch {
+        showToast("Erro no servidor. Tente novamente.", "danger");
+    } finally {
+        setLoading(false);
+    }
     };  
 
     const isDisabled = loading || email.trim() === "" || senha.trim() === "";

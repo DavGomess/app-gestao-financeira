@@ -58,7 +58,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const data = await res.json();
 
             if (!res.ok) {
-                showToast(data.error || "Email ou senha inválidos!", "danger");
                 return false;
             }
 
@@ -67,7 +66,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return true;
         } catch (err) {
             console.log("Erro no login:", err);
-            showToast("Erro ao tentar logar!", "danger");
             return false;
         }
     };
