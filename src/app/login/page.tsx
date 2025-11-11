@@ -1,18 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useToast } from "../../contexts/ToastContext";
 import styles from "./login.module.css";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function Login() {
-    const { login } = useAuth();
+    const { login, user } = useAuth();
     const { showToast } = useToast();
+    const router = useRouter();
     const [email, setEmail] = useState("");
     const [senha, setSenha] = useState("");
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (!loading && user) {
+            router.push("/");
+        }
+    }, [user, loading, router]);
+
+    if (loading) return null;
+    if (user) return null
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -22,20 +33,16 @@ export default function Login() {
         }
 
         setLoading(true);
-        try {
-        const success = await login(email, senha); 
+        const success = await login(email, senha);
 
         if (success) {
             showToast("Login realizado com sucesso!", "success");
+            router.push("/")
         } else {
             showToast("Email ou senha incorretos", "danger");
         }
-    } catch {
-        showToast("Erro no servidor. Tente novamente.", "danger");
-    } finally {
         setLoading(false);
-    }
-    };  
+    };
 
     const isDisabled = loading || email.trim() === "" || senha.trim() === "";
 
@@ -75,7 +82,7 @@ export default function Login() {
                     />
                 </div>
                 <button type="submit" disabled={isDisabled}><i className="bi bi-box-arrow-right me-2"></i>
-                {loading ? "Entrando..." : "Login"}
+                    {loading ? "Entrando..." : "Login"}
                 </button>
                 <div className={styles.infoFooter}>
                     <Link href={"/register"} className={styles.link}><p className={styles.linkregister}>Não tem uma conta? Criar conta</p></Link>
