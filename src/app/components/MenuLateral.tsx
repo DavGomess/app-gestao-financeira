@@ -4,14 +4,12 @@ import { menuItems } from "../data/menuItems";
 import { useSelected } from "../../contexts/SelectedContext";
 import { useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import { useRouter } from "next/navigation";
 
 
 export default function MenuLateral( ) {
     const { selected, setSelected } = useSelected();
     const [isCollapsed, setIsCollapsed] = useState(false);
     const { logout } = useAuth();
-    const router = useRouter();
 
     const recolherMenu = () => {
         setIsCollapsed((prev) => !prev);
@@ -19,7 +17,6 @@ export default function MenuLateral( ) {
 
     const handleLogout = () => {
         logout();
-        router.push("/login")
     }
 
     return (
