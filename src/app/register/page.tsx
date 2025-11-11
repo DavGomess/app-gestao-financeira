@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import styles from "./register.module.css";
 import Link from "next/link";
@@ -8,7 +8,7 @@ import { useToast } from "../../contexts/ToastContext"
 import { useRouter } from "next/navigation";
 
 export default function Register() {
-    const { register } = useAuth();
+    const { register, user } = useAuth();
     const { showToast } = useToast();
     const router = useRouter();
 
@@ -16,6 +16,15 @@ export default function Register() {
     const [senha, setSenha] = useState("");
     const [confirmarSenha, setConfirmarSenha] = useState("");
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+            if (!loading && user) {
+                router.push("/");
+            }
+        }, [user, loading, router]);
+    
+        if (loading) return null
+        if (user) return null
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -25,16 +34,22 @@ export default function Register() {
             return;
         }
 
+        if (senha.length < 6 || confirmarSenha.length < 6) {
+            showToast("A senha deve ter pelo menos 6 caracteres!", "danger");
+            return;
+        }
+
         setLoading(true);
-        try {
-            await register(email, senha);
+        const success = await register(email, senha);
+
+        if (success) {
             showToast("Conta criada com sucesso!", "success");
             router.push("/login");
-        } catch {
-            showToast("Erro ao criar conta", "danger");
-        } finally {
-            setLoading(false);
+        } else {
+            showToast("Erro ao criar conta. Tente outro e-mail.", "danger");
         }
+
+        setLoading(false);
     };
 
     const isDisabled = loading || email.trim() === "" || senha.trim() === "" || confirmarSenha.trim() === "";
