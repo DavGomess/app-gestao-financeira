@@ -1,33 +1,51 @@
 import { useCategorias } from "../../contexts/CategoriaContext";
 import styles from "./categorias.module.css";
-import { categorias as categoriasFixas } from "../data/categorias";
 import { useToast } from "../../contexts/ToastContext";
 import React from "react";
+import { nomesFixosReceita, nomesFixosDespesa } from "../data/categorias";
 
 export default function Categorias() {
     const { categorias, addCategoria, deletarCategoria } = useCategorias();
     const { showToast } = useToast();
 
-    const categoriasCompletas = {
-        Receita: [
-            ...categoriasFixas.Receita.filter((c) => c !== "Todos"),
-            ...categorias.filter((c) => c.tipo === "receita").map((c) => c.nome),
-        ],
-        Despesa: [
-            ...categoriasFixas.Despesa.filter((c) => c !== "Todos"),
-            ...categorias.filter((c) => c.tipo === "despesa").map((c) => c.nome),
-        ],
-    };
+    const categoriasReceita = [
+        ...nomesFixosReceita,
+        ...categorias
+            .filter(c => c.tipo === "receita" && c.nome !== "Todos")
+            .filter(c => !nomesFixosReceita.includes(c.nome))
+            .map(c => c.nome),
+    ];
+
+    const categoriasDespesa = [
+        ...nomesFixosDespesa,
+        ...categorias
+            .filter(c => c.tipo === "despesa" && c.nome !== "Todos")
+            .filter(c => !nomesFixosDespesa.includes(c.nome))
+            .map(c => c.nome),
+    ];
 
     const handleAdd = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const form = e.currentTarget;
-        const nome = form.nome.value.trim();
-        const tipo = form.tipo.value.trim();
-        if (!nome || !tipo) return;
+        const nomeRaw = form.nome.value.trim();
+        const tipo = form.tipo.value.trim().toLowerCase();
+        if (!nomeRaw || !tipo) return;
+
+        const nomeLower = nomeRaw.toLowerCase();
+
+        const fixas = tipo === "receita" ? nomesFixosReceita : nomesFixosDespesa;
+        if (fixas.some(f => f.toLowerCase() === nomeLower)) {
+            showToast("Esta categoria fixa já existe!", "danger");
+            return;
+        }
+
+        if (categorias.some(c => c.nome.toLowerCase() === nomeLower)) {
+            showToast("Esta categoria já existe em outro tipo!", "danger");
+            return;
+        }
         
         try {
-            await addCategoria(nome, tipo); 
+            await addCategoria(nomeLower, tipo); 
             showToast("Categoria criada com sucesso!", "success");
             form.reset();
         } catch {
@@ -81,13 +99,13 @@ export default function Categorias() {
                         <h2>Categorias de Receitas</h2>
                     </div>
                     <ul className={styles.renderizacaoTodasCategorias}>
-                        {categoriasCompletas.Receita.map((nome) => {
-                            const categoriaObj = categorias.find(c => c.nome === nome && c.tipo === "receita");
-                            const key = categoriaObj?.id ?? nome;
+                        {categoriasReceita.map((nome) => {
+                            const isFixa = nomesFixosReceita.includes(nome);
+                            const categoriaObj = !isFixa ? categorias.find(c => c.nome === nome && c.tipo === "receita") : null;
                             return (
-                                <li key={key} className={styles.renderizacaoItemReceita}>
+                                <li key={isFixa ? `fixa-${nome}` : categoriaObj!.id} className={styles.renderizacaoItemReceita}>
                                     {nome}
-                                    {categoriaObj && (
+                                    {!isFixa && categoriaObj && (
                                         <button 
                                             className="btn p-0"
                                             onClick={() => handleDeletar(categoriaObj)}>
@@ -107,13 +125,13 @@ export default function Categorias() {
                         <h2>Categorias de Despesas</h2>
                     </div>
                     <ul className={styles.renderizacaoTodasCategorias}>
-                        {categoriasCompletas.Despesa.map((nome) => {
-                            const categoriaObj = categorias.find(c => c.nome === nome && c.tipo === "despesa");
-                            const key = categoriaObj?.id ?? nome;
+                        {categoriasDespesa.map((nome) => {
+                            const isFixa = nomesFixosDespesa.includes(nome);
+                            const categoriaObj = !isFixa ? categorias.find(c => c.nome === nome && c.tipo === "despesa") : null;
                             return (
-                                <li key={key} className={styles.renderizacaoItemDespesa}>
+                                <li key={isFixa ? `fixa-${nome}` : categoriaObj!.id} className={styles.renderizacaoItemDespesa}>
                                     {nome}
-                                    {categoriaObj && (
+                                    {!isFixa && categoriaObj && (
                                         <button
                                             className="btn p-0"
                                             onClick={() => handleDeletar(categoriaObj)}>

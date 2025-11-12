@@ -1,7 +1,8 @@
 "use client";
 
 import { CategoriaLocal } from "../types"
-import { createContext, useContext, ReactNode, useState } from "react";
+import { createContext, useContext, ReactNode, useState, useEffect } from "react";
+import { useAuth } from "./AuthContext";
 
 
 interface CategoriaContextType {
@@ -14,6 +15,7 @@ const CategoriaContext = createContext<CategoriaContextType | undefined>(undefin
 
 export const CategoriaProvider = ({ children }: { children: ReactNode }) => {
     const [categorias, setCategorias] = useState<CategoriaLocal[]>([]);
+    const { user } = useAuth();
 
     const carregar = async () => {
         const token = localStorage.getItem("token");
@@ -29,6 +31,14 @@ export const CategoriaProvider = ({ children }: { children: ReactNode }) => {
         } catch {}
     }
 
+    useEffect(() => {
+        if (user) {
+            carregar();
+        } else {
+            setCategorias([]);
+        }
+    }, [user]);
+
 
     const addCategoria = async (nome: string, tipo: "receita" | "despesa") => {
         const token = localStorage.getItem("token");
@@ -41,9 +51,12 @@ export const CategoriaProvider = ({ children }: { children: ReactNode }) => {
             });
 
             if (res.ok) {
-                carregar();
+                const novaCategoria = await res.json();
+                setCategorias(prev => [...prev, novaCategoria]);
             }
-    } catch {}
+    } catch (err) {
+        console.error("Erro ao adicionar categoria:", err); 
+    }
 };
     const deletarCategoria = async (id: number) => {
         const token = localStorage.getItem("token");
@@ -54,9 +67,11 @@ export const CategoriaProvider = ({ children }: { children: ReactNode }) => {
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (res.ok) {
-                carregar();
+                setCategorias(prev => prev.filter(c => c.id !== id));
             }
-        } catch {}
+        } catch (err) {
+            console.error("Erroao deletar categoria:", err);
+        }
     };  
 
     return (

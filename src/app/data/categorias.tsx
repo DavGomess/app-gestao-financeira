@@ -5,3 +5,5 @@ export const categorias = {
 
 export type TipoCategoria = keyof typeof categorias;
 
+export const nomesFixosReceita = categorias.Receita.filter(c => c !== "Todos") as readonly string[];
+export const nomesFixosDespesa = categorias.Despesa.filter(c => c !== "Todos") as readonly string[];
