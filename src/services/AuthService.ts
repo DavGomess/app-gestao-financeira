@@ -30,20 +30,18 @@ export class AuthService {
     return { id: user.id, email: user.email };
 }
 
-    static async login({ email, password }: { email: string; password: string }) {
-    if (!email || !password) {
-        throw new Error("E-mail e senha são obrigatórios");
-    }
+    static async login(data: { email: string; password: string }) {
+    const { email, password } = data;
 
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) throw new Error("Usuário não encontrado");
+    if (!user) throw new Error("Email ou senha incorretos");
 
-    const valid = await bcrypt.compare(password, user.password);
-    if (!valid) throw new Error("Senha incorreta");
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) throw new Error("Email ou senha incorretos");
 
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: "7d" });
 
-    return token;
+    return {token, user: { email: user.email }}
 }
 
     static async requestPasswordReset(email: string) {
