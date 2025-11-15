@@ -18,7 +18,7 @@ export default function Login() {
 
     if (authLoading) return null;
     if (user) {
-        router.replace("/"); 
+        setTimeout(() => router.replace("/"), 0); 
         return null;
     }
 
