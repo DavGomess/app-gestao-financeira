@@ -1,48 +1,63 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useToast } from "../contexts/ToastContext"
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 
+interface User {
+    id: number;
+    email: string;
+    nome?: string}
+
 interface AuthContextType {
-    user: string | null;
+    user: User | null;
     loading: boolean;
     isAuthenticated: boolean;
     login: (email: string, senha: string) => Promise<boolean>;
     register: (email: string, senha: string) => Promise<boolean>;
-    logout: () => Promise<void>;
+    logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<string | null>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
-    const { showToast } = useToast();
-    
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";    
+
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+
     useEffect(() => {
-        const checkAuth = async () => {
+        const verificarToken = async () => {
+            const token = sessionStorage.getItem("token");
+
+            if (!token) {
+                    setUser(null);
+                    setLoading(false);
+                    return;
+            }
+
             try {
                 const res = await fetch(`${API_URL}/auth/me`, {
-                    method: "GET",
-                    credentials: "include", 
+                    headers: { Authorization: `Bearer ${token}` },
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    setUser(data.email);
+                    setUser(data.user);
                 } else {
+                    sessionStorage.removeItem("token");
                     setUser(null);
                 }
-            } catch {
+            } catch (err) {
+                console.error("Token inválido ou expirado", err);
+                sessionStorage.removeItem("token");
                 setUser(null);
             } finally {
                 setLoading(false);
             }
-        }
-        checkAuth();
+        };
+
+        verificarToken();
     }, []);
 
 
@@ -50,20 +65,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             const res = await fetch(`${API_URL}/auth/login`, {
                 method: "POST",
-                credentials: "include",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password: senha })
             });
 
             const data = await res.json();
 
-            if (!res.ok) {
-                return false;
+            if (data.token && data.user) {
+                sessionStorage.setItem("token", data.token);
+                setUser(data.user);
+                return true;
             }
-
-            setUser(data.user.email);
-            router.push("/");
-            return true;
+            return false;
         } catch (err) {
             console.log("Erro no login:", err);
             return false;
@@ -78,34 +91,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 body: JSON.stringify({ email, password: senha })
             });
 
-            const data = await res.json();
-
-            if (!res.ok) {
-                showToast(data.error || "Email ao registrar!", "danger");
-                return false;
-            }
-
-            showToast("Conta criada com sucesso! Faça login.", "success");
-            router.push("/login");
-            return true;
-        } catch (err) {
-            console.error("Erro no registro:", err);
-            showToast("Erro ao registrar!", "danger");
+            return res.ok;
+        } catch {
             return false;
         }
     }
 
-    const logout = async () => {
-        try {
-            await fetch(`${API_URL}/auth/logout`, {
-                method: "POST",
-                credentials: "include",
-            });
-        } catch {
-        } finally {
-            setUser(null);
-            router.push("/login");
-        }
+    const logout = () => {
+        sessionStorage.removeItem("token");
+        setUser(null);
+        router.push("/login");
     };
 
     return (
