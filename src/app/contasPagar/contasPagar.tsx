@@ -4,7 +4,6 @@ import { ContaLocal } from "../../types";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { definirStatus, StatusConta } from "../../utils/status";
-import { categorias as categoriasFixas } from "../data/categorias";
 import { useCategorias } from "../../contexts/CategoriaContext";
 import CategoriaModal from "../components/CategoriaModal";
 import { useTransacoes } from "../../contexts/TransacoesContext";
@@ -61,16 +60,10 @@ export default function ContasPagar() {
         return selectedCategoria;
     };
 
-    const categoriasCompletas = {
-        Receita: [
-            ...categoriasFixas.Receita.filter((c) => c !== "Todos"),
-            ...categorias.filter((c) => c.tipo === "receita").map((c) => c.nome),
-        ],
-        Despesa: [
-            ...categoriasFixas.Despesa.filter((c) => c !== "Todos"),
-            ...categorias.filter((c) => c.tipo === "despesa").map((c) => c.nome),
-        ],
-    };
+    const categoriasUsuario = {
+        Receita: categorias.filter(c => c.tipo === "receita").map(c => c.nome),
+        Despesa: categorias.filter(c => c.tipo === "despesa").map(c => c.nome),
+};
 
     useEffect(() => {
         const contasLocal = localStorage.getItem("contas");
@@ -121,18 +114,22 @@ export default function ContasPagar() {
         e.preventDefault();
         const form = e.currentTarget;
         const formData = new FormData(form);
-        const dataConta = novaData ? novaData.toISOString() : "";
 
         if (!selectedCategoriaId) {
             showToast("Selecione uma categoria", "danger");
             return;
         }
 
+        if (!novaData) {
+            showToast("Selecione uma data", "danger");
+            return;
+    }
+
         const conta = {
             nome: formData.get("nome") as string,
             valor: Number(formData.get("valor")),
             categoriaId: selectedCategoriaId,
-            data: dataConta,
+            data: novaData.toISOString().split("T")[0],
         };
 
         const token = localStorage.getItem("token");
@@ -521,7 +518,7 @@ export default function ContasPagar() {
                     multiple={false}
                     onClose={handleCloseModal}
                     onSelect={handleSelectCategoria}
-                    categorias={categoriasCompletas}
+                    categoriasUsuario={categoriasUsuario}
                 />
             )}
         </div>
