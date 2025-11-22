@@ -10,9 +10,14 @@ export class CategoriasRepository {
 
     async listarPorUser(userId: number): Promise<CategoriaFromAPI[]> {
         return prisma.categoria.findMany({
-            where: { userId },
-            orderBy: { nome: "asc" }
-        });
+        where: {
+            OR: [
+                { userId: userId },     
+                { userId: null }   
+            ]
+        },
+        orderBy: { nome: "asc" }
+    });
     }
 
     async deletar(id: number, userId: number): Promise<void> {

@@ -18,17 +18,24 @@ export const CategoriaProvider = ({ children }: { children: ReactNode }) => {
     const { user } = useAuth();
 
     const carregar = async () => {
-        const token = localStorage.getItem("token");
-        if (!token) return;
+        const token = sessionStorage.getItem("token") || localStorage.getItem("token");
+        if (!token || !user) return;
         try {
             const res = await fetch("http://localhost:4000/categorias", {
-                headers: { Authorization: `Bearer ${token}` },
+                headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
             });
             if (res.ok) {
                 const data = await res.json();
-                setCategorias(data.receita.concat(data.despesa));
+                const lista = Array.isArray(data)
+                    ? data
+                    : (data?.receita && data?.despesa)
+                        ? [...data.receita, ...data.despesa]
+                        : [];
+                setCategorias(lista);
             }
-        } catch {}
+        } catch (err) {
+            console.error("Erro ao carregar categorias:", err);
+        }
     }
 
     useEffect(() => {
@@ -41,38 +48,43 @@ export const CategoriaProvider = ({ children }: { children: ReactNode }) => {
 
 
     const addCategoria = async (nome: string, tipo: "receita" | "despesa") => {
-        const token = localStorage.getItem("token");
-        if (!token) return;
-        try {
-            const res = await fetch("http://localhost:4000/categorias", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, 
-                body: JSON.stringify({ nome, tipo }),
-            });
+        const token = sessionStorage.getItem("token") || localStorage.getItem("token");
+        if (!token) throw new Error("Token não encontrado");
 
-            if (res.ok) {
-                const novaCategoria = await res.json();
-                setCategorias(prev => [...prev, novaCategoria]);
-            }
-    } catch (err) {
-        console.error("Erro ao adicionar categoria:", err); 
-    }
-};
-    const deletarCategoria = async (id: number) => {
-        const token = localStorage.getItem("token");
-        if (!token) return;
-        try {
-            const res = await fetch(`http://localhost:4000/categorias/${id}`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (res.ok) {
-                setCategorias(prev => prev.filter(c => c.id !== id));
-            }
-        } catch (err) {
-            console.error("Erroao deletar categoria:", err);
+        const res = await fetch("http://localhost:4000/categorias", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ nome: nome.trim(), tipo }),
+        });
+
+        if (!res.ok) {
+            const erro = await res.json();
+            throw new Error(erro.error || "Erro ao criar categoria");
         }
-    };  
+        const novaCategoria: CategoriaLocal = await res.json();
+        setCategorias(prev => [...prev, novaCategoria]);
+    };
+
+    const deletarCategoria = async (id: number) => {
+        const token = sessionStorage.getItem("token") || localStorage.getItem("token");
+        if (!token) throw new Error("Token não encontrado");
+
+        const categoria = categorias.find(c => c.id === id);
+        if (categoria?.userId === null) {
+            throw new Error("Você não pode deletar categorias fixas do sistema.");
+        }
+
+        const res = await fetch(`http://localhost:4000/categorias/${id}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) {
+            const erro = await res.json();
+            throw new Error(erro.error || "Erro ao deletar");
+        }
+        setCategorias(prev => prev.filter(c => c.id !== id));
+    };
 
     return (
         <CategoriaContext.Provider value={{ categorias, addCategoria, deletarCategoria }}>
@@ -83,6 +95,8 @@ export const CategoriaProvider = ({ children }: { children: ReactNode }) => {
 
 export const useCategorias = () => {
     const ctx = useContext(CategoriaContext);
-    if (!ctx) throw new Error("useCategorias deve ser usado dentro de CategoriaProvider");
+    if (!ctx) {
+        return { categorias: [], addCategoria: async () => { }, deletarCategoria: async () => { } };
+    }
     return ctx;
 };
